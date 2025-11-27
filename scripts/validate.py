@@ -10,7 +10,7 @@ import sys
 import yaml
 from pathlib import Path
 
-def run_ansible_lint(playbook_file, dry_run=False):
+def run_ansible_lint(playbook_file, dry_run=False, verbose=False):
     """Run ansible-lint on playbook"""
     if dry_run:
         print(f"[DRY RUN] Would run ansible-lint on {playbook_file}")
@@ -42,10 +42,20 @@ def validate_playbook_syntax(playbook_file):
         print(f"✗ YAML syntax error: {e}")
         return False
 
-def run_check_mode(playbook_file, inventory_file, dry_run=False):
+def run_check_mode(playbook_file, inventory_file, dry_run=False, verbose=False):
     """Run playbook in check mode"""
     if dry_run:
         print(f"[DRY RUN] Would run ansible-playbook --check on {playbook_file}")
+        
+        if verbose:
+            print(f"  📋 Planned Check Mode Execution:")
+            print(f"  📁 Playbook: {playbook_file}")
+            if inventory_file:
+                print(f"  📂 Inventory: {inventory_file}")
+            print(f"  🔍 Command: ansible-playbook -i {inventory_file} --check {playbook_file}")
+        else:
+            print(f"  📋 Check Mode on {playbook_file}")
+        
         return True
     
     try:
@@ -65,17 +75,17 @@ def run_check_mode(playbook_file, inventory_file, dry_run=False):
         print(e.stderr)
         return False
 
-def validate_all(playbook_file, inventory_file=None, dry_run=False):
+def validate_all(playbook_file, inventory_file=None, dry_run=False, verbose=False):
     """Run all validation checks"""
     print(f"Validating {playbook_file}...")
     
     checks = [
         validate_playbook_syntax(playbook_file),
-        run_ansible_lint(playbook_file, dry_run)
+        run_ansible_lint(playbook_file, dry_run, verbose)
     ]
     
     if inventory_file:
-        checks.append(run_check_mode(playbook_file, inventory_file, dry_run))
+        checks.append(run_check_mode(playbook_file, inventory_file, dry_run, verbose))
     
     if all(checks):
         print("✓ All validations passed")
@@ -91,6 +101,7 @@ if __name__ == "__main__":
     parser.add_argument('playbook', help='Playbook file to validate')
     parser.add_argument('inventory', nargs='?', help='Inventory file (optional)')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be done without executing')
+    parser.add_argument('--verbose', action='store_true', help='Show detailed validation information')
     parser.add_argument('--syntax-only', action='store_true', help='Only check YAML syntax')
     parser.add_argument('--lint-only', action='store_true', help='Only run ansible-lint')
     
@@ -101,6 +112,6 @@ if __name__ == "__main__":
     elif args.lint_only:
         success = run_ansible_lint(args.playbook, args.dry_run)
     else:
-        success = validate_all(args.playbook, args.inventory, args.dry_run)
+        success = validate_all(args.playbook, args.inventory, args.dry_run, args.verbose)
     
     sys.exit(0 if success else 1)

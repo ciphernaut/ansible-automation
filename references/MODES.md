@@ -45,6 +45,8 @@ python3 scripts/community_manager.py install community.general --dry-run
 python3 scripts/tox_testing.py run py39 --dry-run
 python3 scripts/role_manager.py role myrole --dry-run
 python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run
+python3 scripts/generate_playbook.py --template webserver --dry-run
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run
 ```
 
 ### Execution in Build Mode
@@ -53,7 +55,36 @@ python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml -
 python3 scripts/community_manager.py install community.general
 python3 scripts/tox_testing.py run py39
 python3 scripts/validate.py playbook.yml inventory.yml
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --resume
 ```
+
+### Progressive Deployment Mode
+The `deploy_helper.py` script provides enhanced deployment capabilities:
+
+```bash
+# Progressive deployment with hardware optimization
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml
+
+# Resume from failed stage
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --resume
+
+# Check deployment status
+python3 scripts/deploy_helper.py --status
+
+# Reset deployment state
+python3 scripts/deploy_helper.py --reset
+
+# Dry-run with verbose output
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run --verbose
+```
+
+### Hardware-Aware Optimization
+The deployment system automatically detects hardware profiles and optimizes:
+- **High Performance**: 16+ CPU cores, 32GB+ RAM → 20 forks, async enabled
+- **Standard**: 8+ CPU cores, 16GB+ RAM → 10 forks, async enabled  
+- **Minimal**: 4+ CPU cores, 8GB+ RAM → 5 forks, longer timeouts
+- **Resource Constrained**: Lower specs → 2 forks, conservative settings
 
 ### Mode Switching
 Use OpenCode's mode switching (Tab key by default) to switch between Plan and Build modes.

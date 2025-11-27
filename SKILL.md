@@ -11,6 +11,7 @@ description: Comprehensive Ansible automation skill for playbook generation, rol
 ```bash
 python3 scripts/generate_playbook.py config.yml playbook.yml
 python3 scripts/generate_playbook.py config.yml playbook.yml --dry-run  # Planning
+python3 scripts/generate_playbook.py --template webserver --dry-run --verbose  # Template preview
 ```
 
 **Create Role**
@@ -30,6 +31,7 @@ python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml -
 python3 scripts/validate.py playbook.yml inventory.yml
 python3 scripts/validate.py playbook.yml --syntax-only  # Safe validation
 python3 scripts/validate.py playbook.yml inventory.yml --dry-run  # Planning
+python3 scripts/validate.py playbook.yml inventory.yml --dry-run --verbose  # Detailed validation
 ```
 
 **Community Modules**
@@ -37,12 +39,15 @@ python3 scripts/validate.py playbook.yml inventory.yml --dry-run  # Planning
 python3 scripts/community_manager.py list  # Safe - read only
 python3 scripts/community_manager.py search nginx --dry-run  # Planning
 python3 scripts/community_manager.py install community.general --dry-run  # Planning
+python3 scripts/community_manager.py install community.general --dry-run --verbose  # Detailed install preview
 ```
 
-**Testing**
+**Progressive Deployment**
 ```bash
-python3 scripts/tox_testing.py setup  # Safe - file creation
-python3 scripts/tox_testing.py run --dry-run  # Planning
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run  # Planning
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run --verbose  # Detailed deployment preview
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --resume --dry-run  # Resume preview
+python3 scripts/deploy_helper.py --status  # Check deployment status
 ```
 
 ## Core Features
@@ -66,6 +71,10 @@ python3 scripts/tox_testing.py run --dry-run  # Planning
 - Group management
 
 ### 4. Deployment Workflows
+- Progressive deployment with staging
+- Hardware-aware optimization
+- Async execution support
+- State tracking and resume
 - Rolling deployments
 - Blue-green deployments
 - Canary deployments
@@ -99,15 +108,18 @@ python3 scripts/tox_testing.py run --dry-run  # Planning
 - `validate.py` - Run validation and linting
 - `community_manager.py` - Community modules
 - `tox_testing.py` - Testing framework
+- `deploy_helper.py` - Progressive deployment with state tracking
 
 ## Usage Patterns
 
 ### Planning Workflow (Safe Operations)
 1. Use `--dry-run` flags for all operations
-2. Validate syntax with `--syntax-only`
-3. Preview file generation before creation
-4. List and search community modules (read-only)
-5. Generate test environments without execution
+2. Add `--verbose` for detailed operation previews
+3. Validate syntax with `--syntax-only`
+4. Preview file generation before creation
+5. List and search community modules (read-only)
+6. Generate test environments without execution
+7. Preview progressive deployment stages and hardware optimization
 
 ### Development Workflow
 1. Generate playbook skeleton with `--dry-run`
@@ -119,10 +131,11 @@ python3 scripts/tox_testing.py run --dry-run  # Planning
 
 ### Production Deployment
 1. Use check mode first (`--check`)
-2. Run with verbose logging
-3. Monitor deployment
-4. Verify services
-5. Rollback if needed
+2. Run progressive deployment with state tracking
+3. Monitor hardware-optimized execution
+4. Use resume capability for failed stages
+5. Verify services
+6. Rollback if needed
 
 ### Mode-Specific Safety
 - **OpenCode Plan Mode:** Read-only access, no file modifications or system commands

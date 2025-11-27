@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-def search_community_modules(search_term, dry_run=False):
+def search_community_modules(search_term, dry_run=False, verbose=False):
     """Search for community modules"""
     if dry_run:
         print(f"[DRY RUN] Would search for modules: {search_term}")
@@ -31,11 +31,18 @@ def search_community_modules(search_term, dry_run=False):
         print(f"Search failed: {e.stderr}")
         return False
 
-def install_collection(collection_name, dry_run=False):
+def install_collection(collection_name, dry_run=False, verbose=False):
     """Install Ansible collection"""
     if dry_run:
         print(f"[DRY RUN] Would install collection: {collection_name}")
-        print(f"  Command: ansible-galaxy collection install {collection_name}")
+        
+        if verbose:
+            print(f"  📋 Planned Collection Installation:")
+            print(f"  📦 Collection: {collection_name}")
+            print(f"  🔧 Command: ansible-galaxy collection install {collection_name}")
+            print(f"  📂 Scope: System-wide installation")
+            print(f"  ⚠️  Note: This will install to ~/.ansible/collections/")
+        
         return True
     
     try:
@@ -106,6 +113,7 @@ if __name__ == "__main__":
     parser.add_argument('action', choices=['search', 'install', 'list', 'info', 'install_common'], help='Action to perform')
     parser.add_argument('term', nargs='?', help='Search term or collection name')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be done')
+    parser.add_argument('--verbose', action='store_true', help='Show detailed planning information')
     
     args = parser.parse_args()
     
@@ -113,7 +121,7 @@ if __name__ == "__main__":
     if args.action == "search" and args.term:
         success = search_community_modules(args.term, args.dry_run)
     elif args.action == "install" and args.term:
-        success = install_collection(args.term, args.dry_run)
+        success = install_collection(args.term, args.dry_run, args.verbose)
     elif args.action == "list":
         success = list_installed_collections()
     elif args.action == "info" and args.term:

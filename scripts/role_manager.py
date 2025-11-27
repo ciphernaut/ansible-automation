@@ -9,14 +9,27 @@ import sys
 import subprocess
 from pathlib import Path
 
-def create_role(role_name, base_path=".", dry_run=False):
+def create_role(role_name, base_path=".", dry_run=False, verbose=False):
     """Create a new Ansible role with standard structure"""
     role_path = Path(base_path) / role_name
     
     if dry_run:
         print(f"[DRY RUN] Would create role: {role_path}")
-        print(f"  Directories: tasks, handlers, templates, files, vars, defaults, meta")
-        print(f"  Files: tasks/main.yml, handlers/main.yml, vars/main.yml, defaults/main.yml, meta/main.yml")
+        
+        if verbose:
+            print(f"  📁 Planned Role Structure:")
+            print(f"  📂 Role Path: {role_path}")
+            print(f"  📋 Directories: tasks, handlers, templates, files, vars, defaults, meta")
+            print(f"  📄 Core Files:")
+            print(f"    - tasks/main.yml (main task definitions)")
+            print(f"    - handlers/main.yml (event handlers)")
+            print(f"    - vars/main.yml (role variables)")
+            print(f"    - defaults/main.yml (default variables)")
+            print(f"    - meta/main.yml (role metadata and dependencies)")
+        else:
+            print(f"  Directories: tasks, handlers, templates, files, vars, defaults, meta")
+            print(f"  Files: tasks/main.yml, handlers/main.yml, vars/main.yml, defaults/main.yml, meta/main.yml")
+        
         return True
     
     # Create role directory
@@ -75,12 +88,13 @@ if __name__ == "__main__":
     parser.add_argument('name', help='Role or collection name')
     parser.add_argument('path', nargs='?', default='.', help='Base path (default: current directory)')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be done')
+    parser.add_argument('--verbose', action='store_true', help='Show detailed planning information')
     
     args = parser.parse_args()
     
     success = False
     if args.action == "role":
-        success = create_role(args.name, args.path, args.dry_run)
+        success = create_role(args.name, args.path, args.dry_run, args.verbose)
     elif args.action == "collection":
         success = create_collection(args.name, args.path, args.dry_run)
     

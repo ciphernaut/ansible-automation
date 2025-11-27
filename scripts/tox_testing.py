@@ -10,12 +10,25 @@ import sys
 import yaml
 from pathlib import Path
 
-def create_tox_ini(dry_run=False):
+def create_tox_ini(dry_run=False, verbose=False):
     """Create tox.ini file for Ansible testing"""
     if dry_run:
         print("[DRY RUN] Would create tox.ini")
-        print("  Environments: py38, py39, py310, py311")
-        print("  Test frameworks: pytest, ansible-lint, molecule, docker")
+        
+        if verbose:
+            print("  📋 Planned Tox Configuration:")
+            print("  📁 Output file: tox.ini")
+            print("  🐍 Environments: py38, py39, py310, py311")
+            print("  🧪 Test Frameworks: pytest, ansible-lint, molecule, docker")
+            print("  📋 Test Matrix:")
+            print("    py38: Unit + Integration + Docker")
+            print("    py39: Unit + Integration + Docker") 
+            print("    py310: Unit + Integration + Docker")
+            print("    py311: Unit + Integration + Docker")
+        else:
+            print("  Environments: py38, py39, py310, py311")
+            print("  Test frameworks: pytest, ansible-lint, molecule, docker")
+        
         return True
     
     tox_content = """[tox]
@@ -76,12 +89,20 @@ commands =
     print("Created tox.ini")
     return True
 
-def create_molecule_config(role_name, dry_run=False):
+def create_molecule_config(role_name, dry_run=False, verbose=False):
     """Create molecule configuration for a role"""
     if dry_run:
         print(f"[DRY RUN] Would create molecule config for role: {role_name}")
-        print("  Platforms: ubuntu-20.04, centos-8")
-        print("  Verifier: testinfra")
+        
+        if verbose:
+            print("  📋 Planned Molecule Configuration:")
+            print(f"  📁 Role: {role_name}")
+            print("  🐍 Platforms: ubuntu-20.04, centos-8")
+            print("  🔍 Verifier: testinfra")
+            print("  📂 Test Scenarios: default, docker")
+        else:
+            print(f"Created molecule config for role: {role_name}")
+        
         return True
     
     molecule_dir = Path(role_name) / 'molecule' / 'default'
@@ -148,14 +169,23 @@ def create_molecule_config(role_name, dry_run=False):
     print(f"Created molecule config for role: {role_name}")
     return True
 
-def run_tox(env=None, dry_run=False):
+def run_tox(env=None, dry_run=False, verbose=False):
     """Run tox tests"""
     if dry_run:
         print(f"[DRY RUN] Would run tox tests for env: {env or 'all'}")
-        cmd = ['tox']
-        if env:
-            cmd.extend(['-e', env])
-        print(f"  Command: {' '.join(cmd)}")
+        
+        if verbose:
+            print("  📋 Planned Tox Execution:")
+            print(f"  📁 Environment: {env or 'all'}")
+            cmd = ['tox']
+            if env:
+                cmd.extend(['-e', env])
+            print(f"  🔧 Command: {' '.join(cmd)}")
+            print(f"  🧪 Test Scope: Unit, Integration, Linting")
+            print(f"  ⏱️ Expected Duration: 2-5 minutes per environment")
+        else:
+            print(f"  📋 Running Tox Tests: {env or 'all'}")
+        
         return True
     
     cmd = ['tox']
@@ -175,12 +205,25 @@ def run_docker_tests(dry_run=False):
     print("Running Docker tests...")
     return run_tox('py39-docker', dry_run)
 
-def setup_test_environment(dry_run=False):
+def setup_test_environment(dry_run=False, verbose=False):
     """Setup complete test environment"""
     if dry_run:
         print("[DRY RUN] Would setup test environment")
-        print("  Files: tox.ini, tests/test_ansible.py")
-        print("  Directories: tests/, tests/unit/, tests/integration/")
+        
+        if verbose:
+            print("  📋 Planned Test Environment Setup:")
+            print("  📁 Files to create:")
+            print("    - tox.ini (multi-environment testing)")
+            print("    - tests/test_ansible.py (basic Ansible import test)")
+            print("    - tests/unit/ (unit test directory)")
+            print("    - tests/integration/ (integration test directory)")
+            print("  📂 Directories to create:")
+            print("    - tests/ (main test directory)")
+            print("    - tests/unit/ (unit tests)")
+            print("    - tests/integration/ (integration tests)")
+        else:
+            print("  📋 Setting up test environment...")
+        
         return True
     
     print("Setting up test environment...")
@@ -224,6 +267,7 @@ if __name__ == "__main__":
     parser.add_argument('action', choices=['setup', 'run', 'docker', 'molecule'], help='Action to perform')
     parser.add_argument('target', nargs='?', help='Target environment or role name')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be done')
+    parser.add_argument('--verbose', action='store_true', help='Show detailed testing information')
     
     args = parser.parse_args()
     
@@ -231,7 +275,7 @@ if __name__ == "__main__":
     if args.action == "setup":
         success = setup_test_environment(args.dry_run)
     elif args.action == "run":
-        success = run_tox(args.target, args.dry_run)
+        success = run_tox(args.target, args.dry_run, args.verbose)
     elif args.action == "docker":
         success = run_docker_tests(args.dry_run)
     elif args.action == "molecule" and args.target:
