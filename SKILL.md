@@ -30,12 +30,14 @@ python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml -
 python3 scripts/validate.py playbook.yml inventory.yml
 python3 scripts/validate.py playbook.yml --syntax-only  # Safe validation
 python3 scripts/validate.py playbook.yml inventory.yml --dry-run --verbose  # Detailed validation
+# ALWAYS use --check --diff before manual debugging
 ```
 
 **Verify Changes**
 ```bash
 python3 scripts/verify_changes.py playbook.yml inventory.yml  # Basic check
 python3 scripts/verify_changes.py playbook.yml inventory.yml --json  # CI/CD integration
+python3 scripts/verify_changes.py --target <host> --playbook playbook.yml  # Target-specific verification
 # See references/MODES.md for complete verification system
 ```
 
@@ -123,7 +125,6 @@ When available, all scripts automatically leverage Context7 for:
 - `tox_testing.py` - Testing framework with current environment patterns
 - `deploy_helper.py` - Progressive deployment with state tracking and Context7 optimization
 - `verify_changes.py` - Detect untracked debugging changes using check/diff mode
-- `verify_changes.py` - Detect untracked debugging changes using check/diff mode
 
 ### Standard Parameters
 - `--dry-run`: Preview operations without execution
@@ -134,6 +135,8 @@ When available, all scripts automatically leverage Context7 for:
 - `--target-facts`: Role-specific configuration from gathered facts
 - `--json`: JSON output for CI/CD integration (verify_changes.py)
 - `--quiet`: Exit code only output (verify_changes.py)
+- `--target`: Target-specific verification (verify_changes.py)
+- `--playbook`: Playbook-specific verification (verify_changes.py)
 
 ### Ansible Facts Integration
 All scripts support dynamic configuration using `ansible_facts` for target-specific decisions, template selection, and role customization.
@@ -146,6 +149,26 @@ All scripts support dynamic configuration using `ansible_facts` for target-speci
 3. **Production**: Deploy with progressive staging, verify changes, rollback if needed
 4. **Dynamic Configuration**: Use `ansible_facts` for target-specific decisions
 5. **Context7 Integration**: Automatic real-time documentation and best practices throughout
+
+### Debugging Workflow (Critical Path)
+When issues occur during implementation, follow this disciplined approach:
+
+```bash
+# 1. ALWAYS start with check/diff to understand needed changes
+ansible-playbook your_playbook.yml --check --diff
+
+# 2. Analyze diff output - update templates/variables/configs accordingly
+# 3. Re-run with --check --diff to verify your fixes
+# 4. Only after check passes, run without --check to apply changes
+# 5. Use verify_changes.py to capture final working state
+python3 scripts/verify_changes.py playbook.yml inventory.yml --json
+```
+
+**Manual on-target tweaking should be the exception, not the rule.** Only use when:
+- Complex state dependencies that `--check` can't predict
+- Service restarts requiring real-time observation  
+- Performance tuning needing live metrics
+- Network connectivity issues needing immediate resolution
 
 ### Mode-Specific Safety
 - **OpenCode Plan Mode:** Read-only access, no file modifications or system commands
