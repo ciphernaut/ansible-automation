@@ -38,6 +38,9 @@ python3 scripts/validate.py playbook.yml inventory.yml --dry-run --verbose  # De
 python3 scripts/verify_changes.py playbook.yml inventory.yml  # Basic check
 python3 scripts/verify_changes.py playbook.yml inventory.yml --json  # CI/CD integration
 python3 scripts/verify_changes.py --target <host> --playbook playbook.yml  # Target-specific verification
+# Callback integration for enhanced analysis:
+ANSIBLE_STDOUT_CALLBACK=json python3 scripts/verify_changes.py --structured-output
+ANSIBLE_CALLBACKS_ENABLED=junit,opentelemetry python3 scripts/verify_changes.py --with-monitoring
 # See references/MODES.md for complete verification system
 ```
 
@@ -54,6 +57,9 @@ python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run  # Pl
 python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run --verbose  # Detailed preview
 python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --resume --dry-run  # Resume preview
 python3 scripts/deploy_helper.py --status  # Check deployment status
+# Production monitoring with callbacks:
+ANSIBLE_CALLBACKS_ENABLED=community.general.opentelemetry,ansible.posix.timer python3 scripts/deploy_helper.py --monitor
+ANSIBLE_CALLBACKS_ENABLED=community.general.log_plays python3 scripts/deploy_helper.py --audit
 ```
 
 ## Context7 Integration
@@ -85,20 +91,20 @@ When available, all scripts automatically leverage Context7 for:
 - Group management
 
 ### 4. Deployment Workflows
-- Progressive deployment with staging
-- Hardware-aware optimization
-- Async execution support
-- State tracking and resume
-- Rolling deployments
-- Blue-green deployments
-- Canary deployments
-- CI/CD integration
+- Progressive deployment with staging and monitoring
+- Hardware-aware optimization with performance tracking
+- Async execution support with observability
+- State tracking and resume with audit trails
+- Rolling deployments with OpenTelemetry tracing
+- Blue-green deployments with timing analysis
+- Canary deployments with structured logging
+- CI/CD integration with JUnit reporting
 
 ### 5. Testing Framework
-- Tox integration
+- Tox integration with JUnit reporting
 - Docker targets
 - Molecule testing
-- Validation checks
+- Validation checks with callback integration
 
 ### 6. Community Integration with Context7
 - **Real-time Module Discovery**: Context7 provides current Ansible module documentation
@@ -122,9 +128,9 @@ When available, all scripts automatically leverage Context7 for:
 - `inventory_manager.py` - Handle inventory and SSH with current standards
 - `validate.py` - Run validation and linting with up-to-date rules
 - `community_manager.py` - Community modules with real-time discovery
-- `tox_testing.py` - Testing framework with current environment patterns
-- `deploy_helper.py` - Progressive deployment with state tracking and Context7 optimization
-- `verify_changes.py` - Detect untracked debugging changes using check/diff mode with tag-aware verification and state management
+- `tox_testing.py` - Testing framework with current environment patterns and JUnit integration
+- `deploy_helper.py` - Progressive deployment with state tracking, Context7 optimization, and production monitoring (OpenTelemetry/timer/log_plays)
+- `verify_changes.py` - Detect untracked debugging changes using check/diff mode with tag-aware verification, state management, and callback integration (JSON/JUnit/OpenTelemetry)
 
 ### Standard Parameters
 - `--dry-run`: Preview operations without execution
@@ -144,6 +150,10 @@ When available, all scripts automatically leverage Context7 for:
 - `--save-state`: Save verification state for comparison (verify_changes.py)
 - `--compare-state`: Compare against saved state (verify_changes.py)
 - `--full-verification`: Complete verification with state comparison (verify_changes.py)
+- `--structured-output`: Use JSON callback for analysis (verify_changes.py)
+- `--with-monitoring`: Enable JUnit/OpenTelemetry callbacks (verify_changes.py)
+- `--monitor`: Production monitoring with callbacks (deploy_helper.py)
+- `--audit`: Enable audit logging with log_plays (deploy_helper.py)
 
 ### Ansible Facts Integration
 All scripts support dynamic configuration using `ansible_facts` for target-specific decisions, template selection, and role customization.
