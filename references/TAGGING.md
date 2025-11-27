@@ -57,6 +57,48 @@ ansible-playbook playbook.yml --check --diff
 python3 scripts/verify_changes.py --full-verification
 ```
 
+## Orthogonal Tag Development and Refactoring
+
+### Tag Analysis Workflow
+
+```bash
+# 1. Discover all existing tags in playbook
+ansible-playbook playbook.yml --list-tags
+
+# 2. Extract tag usage patterns (custom script)
+python3 scripts/verify_changes.py --analyze-tags playbook.yml
+
+# 3. Identify missing orthogonal tags
+python3 scripts/verify_changes.py --check-tag-coverage playbook.yml
+
+# 4. Validate tag dependencies and consistency
+python3 scripts/verify_changes.py --validate-tag-deps playbook.yml
+```
+
+### Refactoring Strategy
+
+```bash
+# Before refactoring - analyze current state
+ansible-playbook old_playbook.yml --list-tags > current_tags.txt
+
+# After refactoring - verify tag completeness
+ansible-playbook new_playbook.yml --list-tags > new_tags.txt
+
+# Compare tag coverage
+diff current_tags.txt new_tags.txt
+
+# Validate orthogonal tag application
+python3 scripts/verify_changes.py --check-tag-coverage new_playbook.yml
+```
+
+### Tag Development Best Practices
+
+1. **Discovery First**: Always start with `--list-tags` to understand current tag landscape
+2. **Systematic Application**: Apply orthogonal tags consistently across task groups
+3. **Validation**: Use tag analysis tools to ensure coverage and consistency
+4. **Incremental Refactoring**: Update tags in sections, validate with `--list-tags` after each change
+5. **Documentation**: Maintain tag taxonomy in project documentation for team alignment
+
 ## Tag Validation Commands
 
 ```bash
