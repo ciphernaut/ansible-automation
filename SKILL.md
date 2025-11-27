@@ -148,10 +148,27 @@ Scripts use Context7 intelligently to minimize context window usage:
 - `tox_testing.py` - Testing framework with current environment patterns
 - `deploy_helper.py` - Progressive deployment with state tracking and Context7 optimization
 
-### New Parameters
-- `--target-hosts` - Specify hosts for dynamic configuration using ansible_facts
-- `--scan-targets` - Quick analysis of inventory targets for template selection
-- `--target-facts` - Use ansible_facts for role-specific configuration
+### Standard Parameters
+- `--dry-run`: Preview operations without execution
+- `--verbose`: Detailed output with Context7 integration
+- `--syntax-only`: Safe validation without changes
+- `--target-hosts`: Specify hosts for dynamic configuration using ansible_facts
+- `--scan-targets`: Quick analysis of inventory targets for template selection
+- `--target-facts`: Use ansible_facts for role-specific configuration
+
+### Ansible Facts Integration
+- **Dynamic Configuration**: Use `ansible_facts` for target-specific decisions
+- **Template Selection**: Choose templates based on gathered system information
+- **Environment Detection**: Quick analysis of targets for appropriate configuration
+- **Role Customization**: Create roles with target-specific variables from gathered facts
+
+### Quick Commands
+```bash
+# All scripts support ansible_facts integration
+python3 scripts/generate_playbook.py --template webserver --target-facts --dry-run --verbose
+python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --scan-targets --dry-run --verbose
+python3 scripts/role_manager.py role webserver --target-facts --dry-run --verbose
+```
 
 ## Usage Patterns
 
