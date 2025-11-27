@@ -9,12 +9,9 @@ import yaml
 import sys
 from pathlib import Path
 
-# Mode detection
-PLANNING_MODE = os.environ.get('OPENCODE_PLANNING_MODE', 'false').lower() == 'true'
-
 def generate_playbook(config_file, output_file, dry_run=False):
     """Generate playbook from config"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would generate {output_file} from {config_file}")
         # Preview what would be generated
         with open(config_file) as f:

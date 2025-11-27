@@ -10,12 +10,9 @@ import json
 import sys
 from pathlib import Path
 
-# Mode detection
-PLANNING_MODE = os.environ.get('OPENCODE_PLANNING_MODE', 'false').lower() == 'true'
-
 def create_inventory(hosts_file, output_file, dry_run=False):
     """Create Ansible inventory from hosts file"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would create inventory: {output_file}")
         with open(hosts_file) as f:
             hosts = json.load(f)
@@ -58,7 +55,7 @@ def create_inventory(hosts_file, output_file, dry_run=False):
 
 def create_ssh_config(inventory_file, ssh_config_file, dry_run=False):
     """Generate SSH config from Ansible inventory"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would create SSH config: {ssh_config_file}")
         with open(inventory_file) as f:
             inventory = yaml.safe_load(f)

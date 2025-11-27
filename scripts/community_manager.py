@@ -10,12 +10,9 @@ import json
 import sys
 from pathlib import Path
 
-# Mode detection
-PLANNING_MODE = os.environ.get('OPENCODE_PLANNING_MODE', 'false').lower() == 'true'
-
 def search_community_modules(search_term, dry_run=False):
     """Search for community modules"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would search for modules: {search_term}")
         print(f"  Command: ansible-galaxy search {search_term}")
         return True
@@ -36,7 +33,7 @@ def search_community_modules(search_term, dry_run=False):
 
 def install_collection(collection_name, dry_run=False):
     """Install Ansible collection"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would install collection: {collection_name}")
         print(f"  Command: ansible-galaxy collection install {collection_name}")
         return True

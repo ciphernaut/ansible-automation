@@ -10,39 +10,39 @@ description: Comprehensive Ansible automation skill for playbook generation, rol
 **Generate Playbook**
 ```bash
 python3 scripts/generate_playbook.py config.yml playbook.yml
-python3 scripts/generate_playbook.py config.yml playbook.yml --dry-run  # Planning mode
+python3 scripts/generate_playbook.py config.yml playbook.yml --dry-run  # Planning
 ```
 
 **Create Role**
 ```bash
 python3 scripts/role_manager.py role myrole
-python3 scripts/role_manager.py role myrole --dry-run  # Planning mode
+python3 scripts/role_manager.py role myrole --dry-run  # Planning
 ```
 
 **Setup Inventory**
 ```bash
 python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml
-python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run  # Planning mode
+python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run  # Planning
 ```
 
 **Validate**
 ```bash
 python3 scripts/validate.py playbook.yml inventory.yml
 python3 scripts/validate.py playbook.yml --syntax-only  # Safe validation
-python3 scripts/validate.py playbook.yml inventory.yml --dry-run  # Planning mode
+python3 scripts/validate.py playbook.yml inventory.yml --dry-run  # Planning
 ```
 
 **Community Modules**
 ```bash
 python3 scripts/community_manager.py list  # Safe - read only
-python3 scripts/community_manager.py search nginx  # Planning mode safe
-python3 scripts/community_manager.py install community.general --dry-run  # Planning mode
+python3 scripts/community_manager.py search nginx --dry-run  # Planning
+python3 scripts/community_manager.py install community.general --dry-run  # Planning
 ```
 
 **Testing**
 ```bash
 python3 scripts/tox_testing.py setup  # Safe - file creation
-python3 scripts/tox_testing.py run --dry-run  # Planning mode
+python3 scripts/tox_testing.py run --dry-run  # Planning
 ```
 
 ## Core Features
@@ -102,7 +102,7 @@ python3 scripts/tox_testing.py run --dry-run  # Planning mode
 
 ## Usage Patterns
 
-### Planning Mode (Safe Operations)
+### Planning Workflow (Safe Operations)
 1. Use `--dry-run` flags for all operations
 2. Validate syntax with `--syntax-only`
 3. Preview file generation before creation
@@ -125,6 +125,7 @@ python3 scripts/tox_testing.py run --dry-run  # Planning mode
 5. Rollback if needed
 
 ### Mode-Specific Safety
-- **Planning Mode:** All scripts support `--dry-run` via environment variable
-- **Safe Operations:** YAML validation, file generation, read-only queries
-- **Risky Operations:** Package installation, external execution require explicit flags
+- **OpenCode Plan Mode:** Read-only access, no file modifications or system commands
+- **OpenCode Build Mode:** Full access to all tools and operations
+- **Safe Operations:** YAML validation, file generation with --dry-run, read-only queries
+- **Risky Operations:** Package installation, external execution require build mode

@@ -9,14 +9,11 @@ import sys
 import subprocess
 from pathlib import Path
 
-# Mode detection
-PLANNING_MODE = os.environ.get('OPENCODE_PLANNING_MODE', 'false').lower() == 'true'
-
 def create_role(role_name, base_path=".", dry_run=False):
     """Create a new Ansible role with standard structure"""
     role_path = Path(base_path) / role_name
     
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would create role: {role_path}")
         print(f"  Directories: tasks, handlers, templates, files, vars, defaults, meta")
         print(f"  Files: tasks/main.yml, handlers/main.yml, vars/main.yml, defaults/main.yml, meta/main.yml")
@@ -50,7 +47,7 @@ def create_role(role_name, base_path=".", dry_run=False):
 
 def create_collection(collection_name, base_path=".", dry_run=False):
     """Create a new Ansible collection using ansible-galaxy"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would create collection: {collection_name}")
         print(f"  Command: ansible-galaxy collection init {collection_name}")
         return True

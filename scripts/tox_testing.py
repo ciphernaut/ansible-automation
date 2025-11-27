@@ -10,12 +10,9 @@ import sys
 import yaml
 from pathlib import Path
 
-# Mode detection
-PLANNING_MODE = os.environ.get('OPENCODE_PLANNING_MODE', 'false').lower() == 'true'
-
 def create_tox_ini(dry_run=False):
     """Create tox.ini file for Ansible testing"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print("[DRY RUN] Would create tox.ini")
         print("  Environments: py38, py39, py310, py311")
         print("  Test frameworks: pytest, ansible-lint, molecule, docker")
@@ -81,7 +78,7 @@ commands =
 
 def create_molecule_config(role_name, dry_run=False):
     """Create molecule configuration for a role"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would create molecule config for role: {role_name}")
         print("  Platforms: ubuntu-20.04, centos-8")
         print("  Verifier: testinfra")
@@ -153,7 +150,7 @@ def create_molecule_config(role_name, dry_run=False):
 
 def run_tox(env=None, dry_run=False):
     """Run tox tests"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would run tox tests for env: {env or 'all'}")
         cmd = ['tox']
         if env:
@@ -180,7 +177,7 @@ def run_docker_tests(dry_run=False):
 
 def setup_test_environment(dry_run=False):
     """Setup complete test environment"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print("[DRY RUN] Would setup test environment")
         print("  Files: tox.ini, tests/test_ansible.py")
         print("  Directories: tests/, tests/unit/, tests/integration/")

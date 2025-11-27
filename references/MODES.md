@@ -1,28 +1,28 @@
 # Mode Configuration for Ansible Automation Skill
 
-## Environment Variables
+## OpenCode Mode Integration
 
-### Planning Mode Detection
-```bash
-export OPENCODE_PLANNING_MODE=true   # Enable planning mode
-export OPENCODE_PLANNING_MODE=false  # Disable planning mode (default)
-```
+This skill now relies on OpenCode's built-in mode system instead of custom environment variables.
 
-## Safe Operations (Planning Mode)
+### OpenCode Modes
+- **Build Mode**: Full access to all tools and operations (default)
+- **Plan Mode**: Read-only access for analysis and planning
 
-### Always Safe
+### Safe Operations
+
+#### Always Safe
 - YAML syntax validation
 - File generation with --dry-run
 - Read-only operations (list, info)
 - Template and configuration creation
 
-### Safe with Flags
+#### Safe with --dry-run Flag
 - ansible-lint with --dry-run
 - ansible-playbook --check with --dry-run
 - Module search with --dry-run
 - Collection installation with --dry-run
 
-## Risky Operations (Execution Mode Only)
+## Risky Operations (Build Mode Only)
 
 ### System Modifications
 - Package installation without --dry-run
@@ -37,31 +37,23 @@ export OPENCODE_PLANNING_MODE=false  # Disable planning mode (default)
 
 ## Usage Examples
 
-### Planning Mode
+### Planning with --dry-run
 ```bash
-# Set environment
-export OPENCODE_PLANNING_MODE=true
-
-# All operations become dry-run automatically
-python3 scripts/validate.py playbook.yml inventory.yml
-python3 scripts/community_manager.py install community.general
-python3 scripts/tox_testing.py run py39
-```
-
-### Manual Dry-Run
-```bash
-# Override with explicit flag
-python3 scripts/validate.py playbook.yml --dry-run
+# All operations in dry-run mode
+python3 scripts/validate.py playbook.yml inventory.yml --dry-run
+python3 scripts/community_manager.py install community.general --dry-run
+python3 scripts/tox_testing.py run py39 --dry-run
 python3 scripts/role_manager.py role myrole --dry-run
 python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run
 ```
 
-### Execution Mode
+### Execution in Build Mode
 ```bash
-# Disable planning mode
-export OPENCODE_PLANNING_MODE=false
-
-# Run full operations
+# Run full operations (requires build mode)
 python3 scripts/community_manager.py install community.general
 python3 scripts/tox_testing.py run py39
+python3 scripts/validate.py playbook.yml inventory.yml
 ```
+
+### Mode Switching
+Use OpenCode's mode switching (Tab key by default) to switch between Plan and Build modes.

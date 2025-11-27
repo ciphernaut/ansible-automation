@@ -10,12 +10,9 @@ import sys
 import yaml
 from pathlib import Path
 
-# Mode detection
-PLANNING_MODE = os.environ.get('OPENCODE_PLANNING_MODE', 'false').lower() == 'true'
-
 def run_ansible_lint(playbook_file, dry_run=False):
     """Run ansible-lint on playbook"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would run ansible-lint on {playbook_file}")
         return True
     
@@ -47,7 +44,7 @@ def validate_playbook_syntax(playbook_file):
 
 def run_check_mode(playbook_file, inventory_file, dry_run=False):
     """Run playbook in check mode"""
-    if dry_run or PLANNING_MODE:
+    if dry_run:
         print(f"[DRY RUN] Would run ansible-playbook --check on {playbook_file}")
         return True
     
