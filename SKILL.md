@@ -12,6 +12,7 @@ description: Comprehensive Ansible automation skill with Context7 integration fo
 python3 scripts/generate_playbook.py config.yml playbook.yml
 python3 scripts/generate_playbook.py config.yml playbook.yml --dry-run  # Planning
 python3 scripts/generate_playbook.py --template webserver --dry-run --verbose  # Template preview with Context7 best practices
+python3 scripts/generate_playbook.py --template webserver --target-hosts webservers --dry-run --verbose  # Dynamic template with ansible_facts
 ```
 
 **Create Role**
@@ -19,6 +20,7 @@ python3 scripts/generate_playbook.py --template webserver --dry-run --verbose  #
 python3 scripts/role_manager.py role myrole
 python3 scripts/role_manager.py role myrole --dry-run  # Planning
 python3 scripts/role_manager.py role webserver --dry-run --verbose  # Role creation with Context7 patterns
+python3 scripts/role_manager.py role webserver --target-facts --dry-run --verbose  # Role with target-specific configuration
 ```
 
 **Setup Inventory**
@@ -26,6 +28,7 @@ python3 scripts/role_manager.py role webserver --dry-run --verbose  # Role creat
 python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml
 python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run  # Planning
 python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run --verbose  # Inventory setup with Context7 patterns
+python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --scan-targets --dry-run --verbose  # Quick target analysis for dynamic config
 ```
 
 **Validate**
@@ -125,6 +128,8 @@ Scripts use Context7 intelligently to minimize context window usage:
 - **Best Practices Integration**: Live guidance from official Ansible documentation
 - **Pattern Recognition**: Context7 identifies reusable automation patterns
 - **Version-Specific Examples**: Current syntax and deprecated feature warnings
+- **Dynamic Decision Making**: Use `ansible_facts` for on-target configuration decisions
+- **Target-Specific Templates**: Select templates based on gathered system information
 
 ## Resources
 
@@ -142,6 +147,11 @@ Scripts use Context7 intelligently to minimize context window usage:
 - `community_manager.py` - Community modules with real-time discovery
 - `tox_testing.py` - Testing framework with current environment patterns
 - `deploy_helper.py` - Progressive deployment with state tracking and Context7 optimization
+
+### New Parameters
+- `--target-hosts` - Specify hosts for dynamic configuration using ansible_facts
+- `--scan-targets` - Quick analysis of inventory targets for template selection
+- `--target-facts` - Use ansible_facts for role-specific configuration
 
 ## Usage Patterns
 
@@ -164,6 +174,7 @@ Scripts use Context7 intelligently to minimize context window usage:
 5. Validate and lint with safe options
 6. Deploy to staging when ready
 7. **Context7 Integration**: All scripts leverage real-time documentation for accuracy
+8. **Dynamic Configuration**: Use `ansible_facts` for target-specific decisions
 
 ### Production Deployment
 1. Use check mode first (`--check`)
@@ -173,6 +184,7 @@ Scripts use Context7 intelligently to minimize context window usage:
 5. Verify services
 6. Rollback if needed
 7. **Context7 Live Guidance**: Real-time best practices during deployment
+8. **Dynamic Configuration**: Use `ansible_facts` for target-specific decisions
 
 ### Mode-Specific Safety
 - **OpenCode Plan Mode:** Read-only access, no file modifications or system commands
