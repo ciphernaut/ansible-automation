@@ -38,10 +38,9 @@ python3 scripts/validate.py playbook.yml inventory.yml --dry-run --verbose  # De
 python3 scripts/verify_changes.py playbook.yml inventory.yml  # Basic check
 python3 scripts/verify_changes.py playbook.yml inventory.yml --json  # CI/CD integration
 python3 scripts/verify_changes.py --target <host> --playbook playbook.yml  # Target-specific verification
-# Callback integration for enhanced analysis:
+# Callback integration for enhanced analysis (see CALLBACKS.md):
 ANSIBLE_STDOUT_CALLBACK=json python3 scripts/verify_changes.py --structured-output
 ANSIBLE_CALLBACKS_ENABLED=junit,opentelemetry python3 scripts/verify_changes.py --with-monitoring
-# See references/MODES.md for complete verification system
 ```
 
 **Community Modules**
@@ -57,7 +56,7 @@ python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run  # Pl
 python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run --verbose  # Detailed preview
 python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --resume --dry-run  # Resume preview
 python3 scripts/deploy_helper.py --status  # Check deployment status
-# Production monitoring with callbacks:
+# Production monitoring with callbacks (see CALLBACKS.md):
 ANSIBLE_CALLBACKS_ENABLED=community.general.opentelemetry,ansible.posix.timer python3 scripts/deploy_helper.py --monitor
 ANSIBLE_CALLBACKS_ENABLED=community.general.log_plays python3 scripts/deploy_helper.py --audit
 ```
@@ -121,6 +120,10 @@ When available, all scripts automatically leverage Context7 for:
 - [DEPLOYMENT.md](references/DEPLOYMENT.md) - Deployment workflows
 - [VALIDATION.md](references/VALIDATION.md) - Linting and testing
 - [COMMUNITY.md](references/COMMUNITY.md) - Community modules
+- [TAGGING.md](references/TAGGING.md) - Advanced tagging strategy
+- [CALLBACKS.md](references/CALLBACKS.md) - Callback plugin integration
+- [MODES.md](references/MODES.md) - Change verification system
+- [TESTING.md](references/TESTING.md) - Docker and Tox testing
 
 ## Scripts
 - `generate_playbook.py` - Create playbooks from config with Context7 best practices
@@ -192,71 +195,10 @@ python3 scripts/verify_changes.py playbook.yml inventory.yml --json
 - Network connectivity issues needing immediate resolution
 
 ### Advanced Tagging Strategy
-
-For large playbooks where `--check --diff` produces overwhelming output, use systematic tagging:
-
-#### **Standard Orthogonal Tag Taxonomy**
-```yaml
-# Primary Tags (Task Groups)
-tags: ['database', 'webserver', 'network', 'security']
-
-# Orthogonal Tags (Function Types)  
-tags: ['install', 'config', 'service', 'monitoring', 'backup']
-```
-
-#### **Tag Application Examples**
-```yaml
-- name: Install PostgreSQL packages
-  ansible.builtin.yum:
-    name: postgresql-server
-    state: present
-  tags: ['database', 'install', 'packages']
-
-- name: Configure PostgreSQL settings
-  ansible.builtin.template:
-    src: postgresql.conf.j2
-    dest: /var/lib/pgsql/data/postgresql.conf
-  tags: ['database', 'config', 'security']
-
-- name: Start PostgreSQL service
-  ansible.builtin.service:
-    name: postgresql
-    state: started
-    enabled: true
-  tags: ['database', 'service']
-```
-
-#### **Tag-Based Verification Workflow**
-```bash
-# 1. Analyze available tags
-ansible-playbook playbook.yml --list-tags
-
-# 2. Section-by-section verification
-ansible-playbook playbook.yml --tags "install" --check --diff
-python3 scripts/verify_changes.py --tags "install" --save-state
-
-# 3. Configuration verification  
-ansible-playbook playbook.yml --tags "config" --check --diff
-python3 scripts/verify_changes.py --tags "config" --compare-state
-
-# 4. Full verification
-ansible-playbook playbook.yml --check --diff
-python3 scripts/verify_changes.py --full-verification
-```
-
-#### **Tag Validation Commands**
-```bash
-# Validate tag coverage and consistency
-python3 scripts/verify_changes.py --analyze-tags playbook.yml
-
-# Check for missing orthogonal tags
-python3 scripts/verify_changes.py --check-tag-coverage playbook.yml
-
-# Verify tag dependencies
-python3 scripts/verify_changes.py --validate-tag-deps playbook.yml
-```
+For large playbooks where `--check --diff` produces overwhelming output, use systematic tagging. See [TAGGING.md](references/TAGGING.md) for complete orthogonal tag taxonomy and verification workflows.
 
 ### Mode-Specific Safety
+See [MODES.md](references/MODES.md) for complete change verification system and mode configuration:
 - **OpenCode Plan Mode:** Read-only access, no file modifications or system commands
 - **OpenCode Build Mode:** Full access to all tools and operations
 - **Safe Operations:** YAML validation, file generation with --dry-run, read-only queries
