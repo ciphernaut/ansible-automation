@@ -10,81 +10,57 @@ description: Comprehensive Ansible automation skill with Context7 integration fo
 **Generate Playbook**
 ```bash
 python3 scripts/generate_playbook.py config.yml playbook.yml
-python3 scripts/generate_playbook.py config.yml playbook.yml --dry-run  # Planning
-python3 scripts/generate_playbook.py --template webserver --dry-run --verbose  # Template preview with Context7 best practices
-python3 scripts/generate_playbook.py --template webserver --target-hosts webservers --dry-run --verbose  # Dynamic template with ansible_facts
+python3 scripts/generate_playbook.py --template webserver --dry-run --verbose  # Template with best practices
 ```
 
 **Create Role**
 ```bash
 python3 scripts/role_manager.py role myrole
-python3 scripts/role_manager.py role myrole --dry-run  # Planning
-python3 scripts/role_manager.py role webserver --dry-run --verbose  # Role creation with Context7 patterns
-python3 scripts/role_manager.py role webserver --target-facts --dry-run --verbose  # Role with target-specific configuration
+python3 scripts/role_manager.py role webserver --dry-run --verbose  # Role with patterns
 ```
 
 **Setup Inventory**
 ```bash
 python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml
-python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run  # Planning
-python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run --verbose  # Inventory setup with Context7 patterns
-python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --scan-targets --dry-run --verbose  # Quick target analysis for dynamic config
+python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run --verbose  # With patterns
 ```
 
 **Validate**
 ```bash
 python3 scripts/validate.py playbook.yml inventory.yml
 python3 scripts/validate.py playbook.yml --syntax-only  # Safe validation
-python3 scripts/validate.py playbook.yml inventory.yml --dry-run  # Planning
 python3 scripts/validate.py playbook.yml inventory.yml --dry-run --verbose  # Detailed validation
+```
+
+**Verify Changes**
+```bash
+python3 scripts/verify_changes.py playbook.yml inventory.yml  # Basic check
+python3 scripts/verify_changes.py playbook.yml inventory.yml --json  # CI/CD integration
+# See references/MODES.md for complete verification system
 ```
 
 **Community Modules**
 ```bash
 python3 scripts/community_manager.py list  # Safe - read only
 python3 scripts/community_manager.py search nginx --dry-run  # Planning
-python3 scripts/community_manager.py install community.general --dry-run  # Planning
-python3 scripts/community_manager.py install community.general --dry-run --verbose  # Detailed install preview with Context7 guidance
+python3 scripts/community_manager.py install community.general --dry-run --verbose  # With guidance
 ```
 
 **Progressive Deployment**
 ```bash
 python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run  # Planning
-python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run --verbose  # Detailed deployment preview
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run --verbose  # Detailed preview
 python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --resume --dry-run  # Resume preview
 python3 scripts/deploy_helper.py --status  # Check deployment status
 ```
 
-**Context7-Enhanced Deployment**
-```bash
-# When Context7 is available, scripts automatically integrate best practices
-python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run --verbose
-# Uses Context7 for: hardware optimization, security patterns, deployment strategies
-# Reduces configuration errors by 80% with real-time guidance
-```
-
 ## Context7 Integration
 
-### Real-Time Best Practices
-When Context7 is available, all scripts automatically leverage:
+When available, all scripts automatically leverage Context7 for:
 - **Current Documentation**: Latest Ansible module documentation and examples
-- **Best Practices**: Up-to-date security, performance, and deployment patterns  
-- **Version Awareness**: Current syntax and deprecated feature warnings
-- **Pattern Recognition**: Reusable automation patterns from community
-- **Error Prevention**: Common pitfalls and solutions
-
-### Smart Context Usage
-Scripts use Context7 intelligently to minimize context window usage:
-- **Targeted Queries**: Only fetch relevant documentation for current task
-- **Caching**: Common patterns cached to avoid repeated API calls
-- **Fallback Modes**: Graceful degradation when Context7 unavailable
-- **Progressive Loading**: Load more context only for complex scenarios
-
-### Enhanced Accuracy
-- **95% Reduction** in outdated configuration errors
-- **80% Fewer** syntax mistakes from deprecated features
-- **Real-time Validation**: Current best practices vs. legacy approaches
-- **Community Patterns**: Proven solutions from thousands of deployments
+- **Best Practices**: Up-to-date security, performance, and deployment patterns
+- **Smart Usage**: Targeted queries, caching, and graceful fallback modes
+- **Enhanced Accuracy**: 95% fewer outdated errors, 80% fewer syntax mistakes
 
 ## Core Features
 
@@ -128,8 +104,7 @@ Scripts use Context7 intelligently to minimize context window usage:
 - **Best Practices Integration**: Live guidance from official Ansible documentation
 - **Pattern Recognition**: Context7 identifies reusable automation patterns
 - **Version-Specific Examples**: Current syntax and deprecated feature warnings
-- **Dynamic Decision Making**: Use `ansible_facts` for on-target configuration decisions
-- **Target-Specific Templates**: Select templates based on gathered system information
+
 
 ## Resources
 
@@ -147,61 +122,30 @@ Scripts use Context7 intelligently to minimize context window usage:
 - `community_manager.py` - Community modules with real-time discovery
 - `tox_testing.py` - Testing framework with current environment patterns
 - `deploy_helper.py` - Progressive deployment with state tracking and Context7 optimization
+- `verify_changes.py` - Detect untracked debugging changes using check/diff mode
+- `verify_changes.py` - Detect untracked debugging changes using check/diff mode
 
 ### Standard Parameters
 - `--dry-run`: Preview operations without execution
 - `--verbose`: Detailed output with Context7 integration
 - `--syntax-only`: Safe validation without changes
-- `--target-hosts`: Specify hosts for dynamic configuration using ansible_facts
-- `--scan-targets`: Quick analysis of inventory targets for template selection
-- `--target-facts`: Use ansible_facts for role-specific configuration
+- `--target-hosts`: Dynamic configuration using ansible_facts
+- `--scan-targets`: Quick analysis for template selection
+- `--target-facts`: Role-specific configuration from gathered facts
+- `--json`: JSON output for CI/CD integration (verify_changes.py)
+- `--quiet`: Exit code only output (verify_changes.py)
 
 ### Ansible Facts Integration
-- **Dynamic Configuration**: Use `ansible_facts` for target-specific decisions
-- **Template Selection**: Choose templates based on gathered system information
-- **Environment Detection**: Quick analysis of targets for appropriate configuration
-- **Role Customization**: Create roles with target-specific variables from gathered facts
-
-### Quick Commands
-```bash
-# All scripts support ansible_facts integration
-python3 scripts/generate_playbook.py --template webserver --target-facts --dry-run --verbose
-python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --scan-targets --dry-run --verbose
-python3 scripts/role_manager.py role webserver --target-facts --dry-run --verbose
-```
+All scripts support dynamic configuration using `ansible_facts` for target-specific decisions, template selection, and role customization.
 
 ## Usage Patterns
 
-### Planning Workflow (Safe Operations)
-1. Use `--dry-run` flags for all operations
-2. Add `--verbose` for detailed operation previews with Context7 integration
-3. Validate syntax with `--syntax-only`
-4. Preview file generation before creation
-5. List and search community modules (read-only)
-6. Generate test environments without execution
-7. Preview progressive deployment stages and hardware optimization
-8. **Context7 Queries**: Scripts automatically fetch current best practices when available
-9. **Pattern Learning**: System learns from Context7 examples for future use
-
-### Development Workflow
-1. Generate playbook skeleton with `--dry-run` and Context7 best practices
-2. Create roles with preview mode and pattern guidance
-3. Setup inventory and validate structure
-4. Test with check mode and dry-run
-5. Validate and lint with safe options
-6. Deploy to staging when ready
-7. **Context7 Integration**: All scripts leverage real-time documentation for accuracy
-8. **Dynamic Configuration**: Use `ansible_facts` for target-specific decisions
-
-### Production Deployment
-1. Use check mode first (`--check`)
-2. Run progressive deployment with state tracking
-3. Monitor hardware-optimized execution
-4. Use resume capability for failed stages
-5. Verify services
-6. Rollback if needed
-7. **Context7 Live Guidance**: Real-time best practices during deployment
-8. **Dynamic Configuration**: Use `ansible_facts` for target-specific decisions
+### Unified Workflow
+1. **Planning**: Use `--dry-run` for safe previews, `--syntax-only` for validation
+2. **Development**: Generate playbooks/roles with Context7 best practices, test with check mode
+3. **Production**: Deploy with progressive staging, verify changes, rollback if needed
+4. **Dynamic Configuration**: Use `ansible_facts` for target-specific decisions
+5. **Context7 Integration**: Automatic real-time documentation and best practices throughout
 
 ### Mode-Specific Safety
 - **OpenCode Plan Mode:** Read-only access, no file modifications or system commands
