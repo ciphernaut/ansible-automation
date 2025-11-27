@@ -229,6 +229,37 @@ def check_transient_locks(timeout=300, retries=3):
     print(f"❌ Persistent locks detected after {retries} attempts")
     return False
 
+def verify_changes_captured(playbook, inventory=None, extra_vars=None, verbose=False):
+    """Verify debugging changes are captured in Ansible code using check-diff"""
+    script_dir = Path(__file__).parent
+    verify_script = script_dir / "verify_changes.py"
+    
+    if not verify_script.exists():
+        if verbose:
+            print("Warning: verify_changes.py not found, skipping verification")
+        return {"verified": True, "reason": "verification script unavailable"}
+    
+    cmd = [str(verify_script), "--quiet", playbook]
+    
+    if inventory:
+        cmd.extend(["-i", inventory])
+    
+    if extra_vars:
+        extra_vars_str = ",".join([f"{k}={v}" for k, v in extra_vars.items()])
+        cmd.extend(["--extra-vars", extra_vars_str])
+    
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        return {
+            "verified": result.returncode == 0,
+            "has_untracked": result.returncode == 1,
+            "reason": "no untracked changes" if result.returncode == 0 else "untracked changes detected"
+        }
+    except Exception as e:
+        if verbose:
+            print(f"Warning: Change verification failed: {e}")
+        return {"verified": True, "reason": "verification failed"}
+
 def run_ansible_async(playbook, inventory, timeout=300, callback=None):
     """Run ansible-playbook asynchronously with callback support"""
     def run_process():
@@ -396,6 +427,16 @@ def deploy_stage(stage_config, playbook, inventory, state, dry_run=False):
     )
     
     if success:
+        # Verify changes are captured (unless dry run)
+        if not dry_run and stage_config.get('verify_changes', False):
+            print(f"🔍 Verifying changes are captured in code...")
+            verification = verify_changes_captured(playbook, inventory, verbose=True)
+            if verification.get('has_untracked'):
+                print(f"⚠️  Warning: {verification['reason']}")
+                print("  💡 Consider updating Ansible code to capture these changes")
+            else:
+                print(f"✅ Change verification passed: {verification['reason']}")
+        
         # Update state
         state['stages'][stage_name] = {
             'status': 'completed',

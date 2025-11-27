@@ -56,6 +56,15 @@ def generate_playbook(config_file, output_file, dry_run=False, verbose=False):
         yaml.dump([playbook], f, default_flow_style=False)
     
     print(f"Generated {output_file}")
+    
+    # Offer to verify changes if this is an update to existing playbook
+    if Path(output_file).exists():
+        script_dir = Path(__file__).parent
+        verify_script = script_dir / "verify_changes.py"
+        
+        if verify_script.exists():
+            print(f"💡 Tip: Use '{verify_script} {output_file}' to verify changes are captured")
+    
     return True
 
 if __name__ == "__main__":

@@ -22,6 +22,23 @@ This skill now relies on OpenCode's built-in mode system instead of custom envir
 - Module search with --dry-run
 - Collection installation with --dry-run
 
+## Change Verification System
+
+### Purpose
+Detects debugging changes made directly on targets that aren't captured in Ansible code using `ansible-playbook --check --diff`.
+
+### When to Use
+- After manual debugging sessions on target systems
+- Before committing changes to version control
+- During code reviews to ensure completeness
+- When transitioning from development to production
+
+### Verification Modes
+- **Basic**: Quick check for untracked changes
+- **Report**: Detailed JSON output for automation
+- **Quiet**: Silent operation with exit codes
+- **Integration**: Built into progressive deployment
+
 ## Risky Operations (Build Mode Only)
 
 ### System Modifications
@@ -47,6 +64,25 @@ python3 scripts/role_manager.py role myrole --dry-run
 python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run
 python3 scripts/generate_playbook.py --template webserver --dry-run
 python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --dry-run
+```
+
+### Change Verification Mode
+```bash
+# Verify debugging changes are captured in Ansible code
+python3 scripts/verify_changes.py site.yml                           # Basic verification
+python3 scripts/verify_changes.py deploy.yml -i inventory/hosts      # With inventory
+python3 scripts/verify_changes.py debug.yml --extra-vars env=dev     # With variables
+python3 scripts/verify_changes.py --report site.yml > changes.json  # Detailed report
+python3 scripts/verify_changes.py --quiet playbook.yml && echo "OK"  # Silent check
+```
+
+### Progressive Deployment with Change Verification
+```bash
+# Deploy with automatic change verification
+python3 scripts/deploy_helper.py deploy_config.yml inventory.yml --verify-changes
+
+# Progressive deployment with verification at each stage
+python3 scripts/deploy_helper.py --progressive --verify-changes config.yml inventory.yml
 ```
 
 ### Execution in Build Mode
