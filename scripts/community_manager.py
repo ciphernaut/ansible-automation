@@ -4,13 +4,22 @@ Ansible Community Module Manager
 Discovers and installs community modules and collections
 """
 
+import os
 import subprocess
 import json
 import sys
 from pathlib import Path
 
-def search_community_modules(search_term):
+# Mode detection
+PLANNING_MODE = os.environ.get('OPENCODE_PLANNING_MODE', 'false').lower() == 'true'
+
+def search_community_modules(search_term, dry_run=False):
     """Search for community modules"""
+    if dry_run or PLANNING_MODE:
+        print(f"[DRY RUN] Would search for modules: {search_term}")
+        print(f"  Command: ansible-galaxy search {search_term}")
+        return True
+    
     try:
         result = subprocess.run(
             ['ansible-galaxy', 'search', search_term],
@@ -25,8 +34,13 @@ def search_community_modules(search_term):
         print(f"Search failed: {e.stderr}")
         return False
 
-def install_collection(collection_name):
+def install_collection(collection_name, dry_run=False):
     """Install Ansible collection"""
+    if dry_run or PLANNING_MODE:
+        print(f"[DRY RUN] Would install collection: {collection_name}")
+        print(f"  Command: ansible-galaxy collection install {collection_name}")
+        return True
+    
     try:
         result = subprocess.run(
             ['ansible-galaxy', 'collection', 'install', collection_name],
@@ -74,7 +88,7 @@ def get_collection_info(collection_name):
     except ValueError:
         print("Collection name must be in format 'namespace.name'")
 
-def install_common_collections():
+def install_common_collections(dry_run=False):
     """Install commonly used collections"""
     common_collections = [
         'community.general',
@@ -86,25 +100,28 @@ def install_common_collections():
     
     print("Installing common collections...")
     for collection in common_collections:
-        install_collection(collection)
+        install_collection(collection, dry_run)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python3 community_manager.py <search|install|list|info|install_common> [term|collection]")
-        sys.exit(1)
+    import argparse
     
-    action = sys.argv[1]
+    parser = argparse.ArgumentParser(description='Manage Ansible community modules and collections')
+    parser.add_argument('action', choices=['search', 'install', 'list', 'info', 'install_common'], help='Action to perform')
+    parser.add_argument('term', nargs='?', help='Search term or collection name')
+    parser.add_argument('--dry-run', action='store_true', help='Show what would be done')
     
-    if action == "search" and len(sys.argv) > 2:
-        search_community_modules(sys.argv[2])
-    elif action == "install" and len(sys.argv) > 2:
-        install_collection(sys.argv[2])
-    elif action == "list":
-        list_installed_collections()
-    elif action == "info" and len(sys.argv) > 2:
-        get_collection_info(sys.argv[2])
-    elif action == "install_common":
-        install_common_collections()
-    else:
-        print("Invalid action or missing arguments")
-        sys.exit(1)
+    args = parser.parse_args()
+    
+    success = False
+    if args.action == "search" and args.term:
+        success = search_community_modules(args.term, args.dry_run)
+    elif args.action == "install" and args.term:
+        success = install_collection(args.term, args.dry_run)
+    elif args.action == "list":
+        success = list_installed_collections()
+    elif args.action == "info" and args.term:
+        success = get_collection_info(args.term)
+    elif args.action == "install_common":
+        success = install_common_collections(args.dry_run)
+    
+    sys.exit(0 if success else 1)

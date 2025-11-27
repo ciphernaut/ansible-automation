@@ -1,6 +1,6 @@
 ---
 name: ansible-automation
-description: Comprehensive Ansible automation skill for playbook generation, role management, inventory configuration, deployment workflows, testing with Docker targets, community module integration, and validation features. Use when creating Ansible playbooks, roles, collections, linting, debugging, check mode, or deployment automation. Also for community module discovery, tox testing, and documentation.
+description: Comprehensive Ansible automation skill for playbook generation, role management, inventory configuration, deployment workflows, testing with Docker targets, community module integration, and validation features. Use when creating Ansible playbooks, roles, collections, linting, debugging, check mode, or deployment automation. Also for community module discovery, tox testing, and documentation. Supports planning mode with dry-run capabilities for safe preview of operations.
 ---
 
 # Ansible Automation Skill
@@ -10,31 +10,39 @@ description: Comprehensive Ansible automation skill for playbook generation, rol
 **Generate Playbook**
 ```bash
 python3 scripts/generate_playbook.py config.yml playbook.yml
+python3 scripts/generate_playbook.py config.yml playbook.yml --dry-run  # Planning mode
 ```
 
 **Create Role**
 ```bash
 python3 scripts/role_manager.py role myrole
+python3 scripts/role_manager.py role myrole --dry-run  # Planning mode
 ```
 
 **Setup Inventory**
 ```bash
 python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml
+python3 scripts/inventory_manager.py create_inventory hosts.json inventory.yml --dry-run  # Planning mode
 ```
 
 **Validate**
 ```bash
 python3 scripts/validate.py playbook.yml inventory.yml
+python3 scripts/validate.py playbook.yml --syntax-only  # Safe validation
+python3 scripts/validate.py playbook.yml inventory.yml --dry-run  # Planning mode
 ```
 
-**Install Community Modules**
+**Community Modules**
 ```bash
-python3 scripts/community_manager.py install_common
+python3 scripts/community_manager.py list  # Safe - read only
+python3 scripts/community_manager.py search nginx  # Planning mode safe
+python3 scripts/community_manager.py install community.general --dry-run  # Planning mode
 ```
 
-**Setup Testing**
+**Testing**
 ```bash
-python scripts/tox_testing.py setup
+python3 scripts/tox_testing.py setup  # Safe - file creation
+python3 scripts/tox_testing.py run --dry-run  # Planning mode
 ```
 
 ## Core Features
@@ -94,17 +102,29 @@ python scripts/tox_testing.py setup
 
 ## Usage Patterns
 
-**Development:**
-1. Generate playbook skeleton
-2. Create roles for components
-3. Setup inventory
-4. Test with check mode
-5. Validate and lint
-6. Deploy to staging
+### Planning Mode (Safe Operations)
+1. Use `--dry-run` flags for all operations
+2. Validate syntax with `--syntax-only`
+3. Preview file generation before creation
+4. List and search community modules (read-only)
+5. Generate test environments without execution
 
-**Production:**
-1. Use check mode first
+### Development Workflow
+1. Generate playbook skeleton with `--dry-run`
+2. Create roles with preview mode
+3. Setup inventory and validate structure
+4. Test with check mode and dry-run
+5. Validate and lint with safe options
+6. Deploy to staging when ready
+
+### Production Deployment
+1. Use check mode first (`--check`)
 2. Run with verbose logging
 3. Monitor deployment
 4. Verify services
 5. Rollback if needed
+
+### Mode-Specific Safety
+- **Planning Mode:** All scripts support `--dry-run` via environment variable
+- **Safe Operations:** YAML validation, file generation, read-only queries
+- **Risky Operations:** Package installation, external execution require explicit flags

@@ -4,13 +4,27 @@ Ansible Inventory Manager
 Manages Ansible inventory files and SSH configurations
 """
 
+import os
 import yaml
 import json
 import sys
 from pathlib import Path
 
-def create_inventory(hosts_file, output_file):
+# Mode detection
+PLANNING_MODE = os.environ.get('OPENCODE_PLANNING_MODE', 'false').lower() == 'true'
+
+def create_inventory(hosts_file, output_file, dry_run=False):
     """Create Ansible inventory from hosts file"""
+    if dry_run or PLANNING_MODE:
+        print(f"[DRY RUN] Would create inventory: {output_file}")
+        with open(hosts_file) as f:
+            hosts = json.load(f)
+        print(f"  Hosts: {len(hosts)}")
+        for host in hosts:
+            group = host.get('group', 'ungrouped')
+            print(f"    {host['name']} -> {group}")
+        return True
+    
     inventory = {
         'all': {
             'children': {}
@@ -40,9 +54,20 @@ def create_inventory(hosts_file, output_file):
         yaml.dump(inventory, f, default_flow_style=False)
     
     print(f"Created inventory: {output_file}")
+    return True
 
-def create_ssh_config(inventory_file, ssh_config_file):
+def create_ssh_config(inventory_file, ssh_config_file, dry_run=False):
     """Generate SSH config from Ansible inventory"""
+    if dry_run or PLANNING_MODE:
+        print(f"[DRY RUN] Would create SSH config: {ssh_config_file}")
+        with open(inventory_file) as f:
+            inventory = yaml.safe_load(f)
+        host_count = 0
+        for group_name, group_data in inventory.get('all', {}).get('children', {}).items():
+            host_count += len(group_data.get('hosts', {}))
+        print(f"  SSH entries: {host_count}")
+        return True
+    
     with open(inventory_file) as f:
         inventory = yaml.safe_load(f)
     
@@ -65,20 +90,23 @@ def create_ssh_config(inventory_file, ssh_config_file):
         f.writelines(ssh_config)
     
     print(f"Created SSH config: {ssh_config_file}")
+    return True
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python3 inventory_manager.py <create_inventory|create_ssh> <input> <output>")
-        sys.exit(1)
+    import argparse
     
-    action = sys.argv[1]
-    input_file = sys.argv[2]
-    output_file = sys.argv[3]
+    parser = argparse.ArgumentParser(description='Manage Ansible inventory and SSH configs')
+    parser.add_argument('action', choices=['create_inventory', 'create_ssh'], help='Action to perform')
+    parser.add_argument('input', help='Input file')
+    parser.add_argument('output', help='Output file')
+    parser.add_argument('--dry-run', action='store_true', help='Show what would be done')
     
-    if action == "create_inventory":
-        create_inventory(input_file, output_file)
-    elif action == "create_ssh":
-        create_ssh_config(input_file, output_file)
-    else:
-        print("Action must be 'create_inventory' or 'create_ssh'")
-        sys.exit(1)
+    args = parser.parse_args()
+    
+    success = False
+    if args.action == "create_inventory":
+        success = create_inventory(args.input, args.output, args.dry_run)
+    elif args.action == "create_ssh":
+        success = create_ssh_config(args.input, args.output, args.dry_run)
+    
+    sys.exit(0 if success else 1)

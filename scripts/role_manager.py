@@ -9,9 +9,18 @@ import sys
 import subprocess
 from pathlib import Path
 
-def create_role(role_name, base_path="."):
+# Mode detection
+PLANNING_MODE = os.environ.get('OPENCODE_PLANNING_MODE', 'false').lower() == 'true'
+
+def create_role(role_name, base_path=".", dry_run=False):
     """Create a new Ansible role with standard structure"""
     role_path = Path(base_path) / role_name
+    
+    if dry_run or PLANNING_MODE:
+        print(f"[DRY RUN] Would create role: {role_path}")
+        print(f"  Directories: tasks, handlers, templates, files, vars, defaults, meta")
+        print(f"  Files: tasks/main.yml, handlers/main.yml, vars/main.yml, defaults/main.yml, meta/main.yml")
+        return True
     
     # Create role directory
     role_path.mkdir(exist_ok=True)
@@ -37,9 +46,15 @@ def create_role(role_name, base_path="."):
                 f.write(content.replace('{{ role_name }}', role_name))
     
     print(f"Created role: {role_path}")
+    return True
 
-def create_collection(collection_name, base_path="."):
+def create_collection(collection_name, base_path=".", dry_run=False):
     """Create a new Ansible collection using ansible-galaxy"""
+    if dry_run or PLANNING_MODE:
+        print(f"[DRY RUN] Would create collection: {collection_name}")
+        print(f"  Command: ansible-galaxy collection init {collection_name}")
+        return True
+    
     try:
         result = subprocess.run(
             ['ansible-galaxy', 'collection', 'init', collection_name],
@@ -56,18 +71,20 @@ def create_collection(collection_name, base_path="."):
         return False
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python3 role_manager.py <role|collection> <name> [path]")
-        sys.exit(1)
+    import argparse
     
-    action = sys.argv[1]
-    name = sys.argv[2]
-    path = sys.argv[3] if len(sys.argv) > 3 else "."
+    parser = argparse.ArgumentParser(description='Manage Ansible roles and collections')
+    parser.add_argument('action', choices=['role', 'collection'], help='Action to perform')
+    parser.add_argument('name', help='Role or collection name')
+    parser.add_argument('path', nargs='?', default='.', help='Base path (default: current directory)')
+    parser.add_argument('--dry-run', action='store_true', help='Show what would be done')
     
-    if action == "role":
-        create_role(name, path)
-    elif action == "collection":
-        create_collection(name, path)
-    else:
-        print("Action must be 'role' or 'collection'")
-        sys.exit(1)
+    args = parser.parse_args()
+    
+    success = False
+    if args.action == "role":
+        success = create_role(args.name, args.path, args.dry_run)
+    elif args.action == "collection":
+        success = create_collection(args.name, args.path, args.dry_run)
+    
+    sys.exit(0 if success else 1)
