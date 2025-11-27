@@ -124,7 +124,7 @@ When available, all scripts automatically leverage Context7 for:
 - `community_manager.py` - Community modules with real-time discovery
 - `tox_testing.py` - Testing framework with current environment patterns
 - `deploy_helper.py` - Progressive deployment with state tracking and Context7 optimization
-- `verify_changes.py` - Detect untracked debugging changes using check/diff mode
+- `verify_changes.py` - Detect untracked debugging changes using check/diff mode with tag-aware verification and state management
 
 ### Standard Parameters
 - `--dry-run`: Preview operations without execution
@@ -137,6 +137,13 @@ When available, all scripts automatically leverage Context7 for:
 - `--quiet`: Exit code only output (verify_changes.py)
 - `--target`: Target-specific verification (verify_changes.py)
 - `--playbook`: Playbook-specific verification (verify_changes.py)
+- `--tags`: Tag-specific verification (verify_changes.py)
+- `--analyze-tags`: Tag coverage analysis (verify_changes.py)
+- `--check-tag-coverage`: Validate orthogonal tag completeness (verify_changes.py)
+- `--validate-tag-deps`: Check tag dependencies (verify_changes.py)
+- `--save-state`: Save verification state for comparison (verify_changes.py)
+- `--compare-state`: Compare against saved state (verify_changes.py)
+- `--full-verification`: Complete verification with state comparison (verify_changes.py)
 
 ### Ansible Facts Integration
 All scripts support dynamic configuration using `ansible_facts` for target-specific decisions, template selection, and role customization.
@@ -157,10 +164,14 @@ When issues occur during implementation, follow this disciplined approach:
 # 1. ALWAYS start with check/diff to understand needed changes
 ansible-playbook your_playbook.yml --check --diff
 
-# 2. Analyze diff output - update templates/variables/configs accordingly
-# 3. Re-run with --check --diff to verify your fixes
-# 4. Only after check passes, run without --check to apply changes
-# 5. Use verify_changes.py to capture final working state
+# 2. For large playbooks, use step-by-step or tag-based verification:
+#    Step mode: ansible-playbook playbook.yml --step --check --diff
+#    Tag mode: ansible-playbook playbook.yml --tags "install" --check --diff
+
+# 3. Analyze diff output - update templates/variables/configs accordingly
+# 4. Re-run with --check --diff to verify your fixes
+# 5. Only after check passes, run without --check to apply changes
+# 6. Use verify_changes.py to capture final working state
 python3 scripts/verify_changes.py playbook.yml inventory.yml --json
 ```
 
@@ -169,6 +180,71 @@ python3 scripts/verify_changes.py playbook.yml inventory.yml --json
 - Service restarts requiring real-time observation  
 - Performance tuning needing live metrics
 - Network connectivity issues needing immediate resolution
+
+### Advanced Tagging Strategy
+
+For large playbooks where `--check --diff` produces overwhelming output, use systematic tagging:
+
+#### **Standard Orthogonal Tag Taxonomy**
+```yaml
+# Primary Tags (Task Groups)
+tags: ['database', 'webserver', 'network', 'security']
+
+# Orthogonal Tags (Function Types)  
+tags: ['install', 'config', 'service', 'monitoring', 'backup']
+```
+
+#### **Tag Application Examples**
+```yaml
+- name: Install PostgreSQL packages
+  ansible.builtin.yum:
+    name: postgresql-server
+    state: present
+  tags: ['database', 'install', 'packages']
+
+- name: Configure PostgreSQL settings
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: /var/lib/pgsql/data/postgresql.conf
+  tags: ['database', 'config', 'security']
+
+- name: Start PostgreSQL service
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+  tags: ['database', 'service']
+```
+
+#### **Tag-Based Verification Workflow**
+```bash
+# 1. Analyze available tags
+ansible-playbook playbook.yml --list-tags
+
+# 2. Section-by-section verification
+ansible-playbook playbook.yml --tags "install" --check --diff
+python3 scripts/verify_changes.py --tags "install" --save-state
+
+# 3. Configuration verification  
+ansible-playbook playbook.yml --tags "config" --check --diff
+python3 scripts/verify_changes.py --tags "config" --compare-state
+
+# 4. Full verification
+ansible-playbook playbook.yml --check --diff
+python3 scripts/verify_changes.py --full-verification
+```
+
+#### **Tag Validation Commands**
+```bash
+# Validate tag coverage and consistency
+python3 scripts/verify_changes.py --analyze-tags playbook.yml
+
+# Check for missing orthogonal tags
+python3 scripts/verify_changes.py --check-tag-coverage playbook.yml
+
+# Verify tag dependencies
+python3 scripts/verify_changes.py --validate-tag-deps playbook.yml
+```
 
 ### Mode-Specific Safety
 - **OpenCode Plan Mode:** Read-only access, no file modifications or system commands
