@@ -2,6 +2,24 @@
 
 ## Available Callback Plugins
 
+### Minimal Callback
+```bash
+# Basic minimal output
+ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook playbook.yml
+
+# Minimal with YAML results for template matching
+ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook playbook.yml
+
+# Minimal with pretty YAML for better readability
+ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ANSIBLE_CALLBACK_FORMAT_PRETTY=true ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook playbook.yml
+```
+- Ultra-compact output for high-volume automation
+- Default for ansible ad-hoc commands
+- Reduces log noise in CI/CD pipelines
+- Perfect for scripted execution where only exit codes matter
+- YAML result format matches Ansible templating and variable structures
+- Pretty formatting enhances readability while maintaining minimal output
+
 ### JSON Callback
 ```bash
 ANSIBLE_STDOUT_CALLBACK=json ansible-playbook playbook.yml
@@ -52,6 +70,12 @@ ANSIBLE_CALLBACKS_ENABLED=community.general.opentelemetry,ansible.posix.timer,co
 
 ### CI/CD Testing
 ```bash
+# Minimal output for automated pipelines (exit codes only)
+ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook test.yml
+
+# Minimal with YAML results for template validation
+ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook test.yml
+
 # Structured output for automated testing
 ANSIBLE_STDOUT_CALLBACK=json ANSIBLE_CALLBACKS_ENABLED=junit ansible-playbook test.yml
 ```
@@ -85,6 +109,8 @@ ANSIBLE_CALLBACKS_ENABLED=community.general.log_plays python3 scripts/deploy_hel
 [defaults]
 stdout_callback = json
 callback_whitelist = timer,junit,profile_roles
+callback_result_format = yaml
+callback_format_pretty = true
 
 [callback_junit]
 test_case_prefix = ansible
@@ -95,6 +121,22 @@ endpoint = http://localhost:4317
 service_name = ansible-automation
 ```
 
+### Minimal Callback Configuration
+```ini
+[defaults]
+# For template matching and readability
+callback_result_format = yaml
+callback_format_pretty = true
+
+# Environment-specific overrides
+# Production: minimal output
+# stdout_callback = minimal
+
+# Development: minimal with YAML
+# stdout_callback = minimal
+# callback_result_format = yaml
+```
+
 ## Best Practices
 
 1. **Environment-Specific**: Use different callbacks for dev vs prod
@@ -102,3 +144,7 @@ service_name = ansible-automation
 3. **Output Management**: Configure log rotation and cleanup
 4. **Security**: Avoid logging sensitive information
 5. **Integration**: Ensure compatibility with existing monitoring tools
+6. **Minimal for Automation**: Use `minimal` callback for high-volume scripted execution where only success/failure matters
+7. **Progressive Verbosity**: Start with `minimal`, add specific callbacks as needed for debugging
+8. **Template Matching**: Use `callback_result_format=yaml` with minimal callback to match Ansible templating structure
+9. **Readability**: Enable `callback_format_pretty=true` for better YAML output while maintaining minimal verbosity

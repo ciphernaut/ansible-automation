@@ -39,6 +39,8 @@ python3 scripts/verify_changes.py playbook.yml inventory.yml  # Basic check
 python3 scripts/verify_changes.py playbook.yml inventory.yml --json  # CI/CD integration
 python3 scripts/verify_changes.py --target <host> --playbook playbook.yml  # Target-specific verification
 # Callback integration for enhanced analysis (see CALLBACKS.md):
+ANSIBLE_STDOUT_CALLBACK=minimal python3 scripts/verify_changes.py --quiet-automation
+ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ANSIBLE_STDOUT_CALLBACK=minimal python3 scripts/verify_changes.py --template-matching
 ANSIBLE_STDOUT_CALLBACK=json python3 scripts/verify_changes.py --structured-output
 ANSIBLE_CALLBACKS_ENABLED=junit,opentelemetry python3 scripts/verify_changes.py --with-monitoring
 ```
@@ -144,6 +146,7 @@ When available, all scripts automatically leverage Context7 for:
 - `--target-facts`: Role-specific configuration from gathered facts
 - `--json`: JSON output for CI/CD integration (verify_changes.py)
 - `--quiet`: Exit code only output (verify_changes.py)
+- `--quiet-automation`: Minimal output for automated pipelines (verify_changes.py)
 - `--target`: Target-specific verification (verify_changes.py)
 - `--playbook`: Playbook-specific verification (verify_changes.py)
 - `--tags`: Tag-specific verification (verify_changes.py)
@@ -154,6 +157,7 @@ When available, all scripts automatically leverage Context7 for:
 - `--compare-state`: Compare against saved state (verify_changes.py)
 - `--full-verification`: Complete verification with state comparison (verify_changes.py)
 - `--structured-output`: Use JSON callback for analysis (verify_changes.py)
+- `--template-matching`: Use minimal callback with YAML for template validation (verify_changes.py)
 - `--with-monitoring`: Enable JUnit/OpenTelemetry callbacks (verify_changes.py)
 - `--monitor`: Production monitoring with callbacks (deploy_helper.py)
 - `--audit`: Enable audit logging with log_plays (deploy_helper.py)
