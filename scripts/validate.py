@@ -42,8 +42,8 @@ def validate_playbook_syntax(playbook_file):
         print(f"✗ YAML syntax error: {e}")
         return False
 
-def run_check_mode(playbook_file, inventory_file, dry_run=False, verbose=False):
-    """Run playbook in check mode"""
+def run_check_mode(playbook_file, inventory_file, dry_run=False, verbose=False, state_validation=False):
+    """Run playbook in check mode with optional state validation"""
     if dry_run:
         print(f"[DRY RUN] Would run ansible-playbook --check on {playbook_file}")
         
@@ -52,7 +52,10 @@ def run_check_mode(playbook_file, inventory_file, dry_run=False, verbose=False):
             print(f"  📁 Playbook: {playbook_file}")
             if inventory_file:
                 print(f"  📂 Inventory: {inventory_file}")
-            print(f"  🔍 Command: ansible-playbook -i {inventory_file} --check {playbook_file}")
+            cmd = f"ansible-playbook -i {inventory_file} --check {playbook_file}"
+            if state_validation:
+                cmd += " --diff"
+            print(f"  🔍 Command: {cmd}")
         else:
             print(f"  📋 Check Mode on {playbook_file}")
         
@@ -62,11 +65,26 @@ def run_check_mode(playbook_file, inventory_file, dry_run=False, verbose=False):
         cmd = [
             'ansible-playbook',
             '-i', inventory_file,
-            '--check',
-            playbook_file
+            '--check'
         ]
+        
+        # Add diff for state validation
+        if state_validation:
+            cmd.append('--diff')
+        
+        cmd.append(playbook_file)
+        
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         print("✓ Check mode passed")
+        if state_validation and result.stdout:
+            print("📊 State changes detected:")
+            # Extract and display key changes
+            for line in result.stdout.split('\n'):
+                if 'changed' in line.lower() and '=>' in line:
+                    print(f"  • {line.strip()}")
+                elif line.startswith('---') or line.startswith('+++'):
+                    print(f"  📁 {line.strip()}")
+        
         print(result.stdout)
         return True
     except subprocess.CalledProcessError as e:
@@ -75,7 +93,7 @@ def run_check_mode(playbook_file, inventory_file, dry_run=False, verbose=False):
         print(e.stderr)
         return False
 
-def validate_all(playbook_file, inventory_file=None, dry_run=False, verbose=False):
+def validate_all(playbook_file, inventory_file=None, dry_run=False, verbose=False, state_validation=False):
     """Run all validation checks"""
     print(f"Validating {playbook_file}...")
     
@@ -85,7 +103,7 @@ def validate_all(playbook_file, inventory_file=None, dry_run=False, verbose=Fals
     ]
     
     if inventory_file:
-        checks.append(run_check_mode(playbook_file, inventory_file, dry_run, verbose))
+        checks.append(run_check_mode(playbook_file, inventory_file, dry_run, verbose, state_validation))
     
     if all(checks):
         print("✓ All validations passed")
@@ -104,6 +122,7 @@ if __name__ == "__main__":
     parser.add_argument('--verbose', action='store_true', help='Show detailed validation information')
     parser.add_argument('--syntax-only', action='store_true', help='Only check YAML syntax')
     parser.add_argument('--lint-only', action='store_true', help='Only run ansible-lint')
+    parser.add_argument('--state-validation', action='store_true', help='Enable state validation with --diff')
     
     args = parser.parse_args()
     
@@ -112,6 +131,6 @@ if __name__ == "__main__":
     elif args.lint_only:
         success = run_ansible_lint(args.playbook, args.dry_run)
     else:
-        success = validate_all(args.playbook, args.inventory, args.dry_run, args.verbose)
+        success = validate_all(args.playbook, args.inventory, args.dry_run, args.verbose, args.state_validation)
     
     sys.exit(0 if success else 1)
