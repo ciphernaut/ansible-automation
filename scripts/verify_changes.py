@@ -228,6 +228,8 @@ Examples:
                        help="Minimal output, exit code only")
     parser.add_argument("--capture-state", action="store_true",
                        help="Enable enhanced state change capture")
+    parser.add_argument("--idempotence-check", action="store_true",
+                       help="Include idempotence verification in analysis")
     
     args = parser.parse_args()
     
@@ -248,6 +250,28 @@ Examples:
     result = run_check_diff(args.playbook, args.inventory, extra_vars, args.capture_state)
     report = generate_verification_report(result, args.playbook)
     
+    # Add idempotence check if requested
+    if args.idempotence_check and args.inventory:
+        print("🔄 Adding idempotence verification...")
+        try:
+            import subprocess
+            idempotence_result = subprocess.run([
+                "python3", "/home/void/projects/ansible-automation/scripts/test_idempotence.py",
+                "-i", args.inventory, args.playbook, "--iterations", "2", "--quiet"
+            ], capture_output=True, text=True, timeout=600)
+            
+            report["idempotence_check"] = {
+                "included": True,
+                "idempotent": idempotence_result.returncode == 0,
+                "details": idempotence_result.stderr if idempotence_result.returncode != 0 else None
+            }
+        except Exception as e:
+            report["idempotence_check"] = {
+                "included": True,
+                "idempotent": False,
+                "error": str(e)
+            }
+    
     # Output results
     if args.report:
         print(json.dumps(report, indent=2))
@@ -258,6 +282,14 @@ Examples:
         print(f"Verification: {report['verification_status'].upper()}")
         print(f"Untracked changes: {'YES' if report['has_untracked_changes'] else 'NO'}")
         print(f"Severity: {report.get('severity', 'UNKNOWN')}")
+        
+        if report.get("idempotence_check", {}).get("included", False):
+            idempotence = report["idempotence_check"]
+            status = "✓" if idempotence.get("idempotent", False) else "✗"
+            print(f"Idempotence Check: {status}")
+            if not idempotence.get("idempotent", False):
+                details = idempotence.get("details") or idempotence.get("error", "Unknown error")
+                print(f"  ❌ {details}")
         
         if report["changes_detected"] > 0:
             print(f"\nDetected changes ({report['changes_detected']}):")

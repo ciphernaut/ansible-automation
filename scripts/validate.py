@@ -93,7 +93,7 @@ def run_check_mode(playbook_file, inventory_file, dry_run=False, verbose=False, 
         print(e.stderr)
         return False
 
-def validate_all(playbook_file, inventory_file=None, dry_run=False, verbose=False, state_validation=False):
+def validate_all(playbook_file, inventory_file=None, dry_run=False, verbose=False, state_validation=False, idempotence_test=False):
     """Run all validation checks"""
     print(f"Validating {playbook_file}...")
     
@@ -104,6 +104,26 @@ def validate_all(playbook_file, inventory_file=None, dry_run=False, verbose=Fals
     
     if inventory_file:
         checks.append(run_check_mode(playbook_file, inventory_file, dry_run, verbose, state_validation))
+        
+        # Add idempotence testing if requested
+        if idempotence_test:
+            print("🔄 Running idempotence test...")
+            try:
+                # Run idempotence test as subprocess
+                import subprocess
+                result = subprocess.run([
+                    "python3", "/home/void/projects/ansible-automation/scripts/test_idempotence.py",
+                    "-i", inventory_file, playbook_file, "--iterations", "2", "--quiet"
+                ], capture_output=True, text=True, timeout=600)
+                
+                idempotence_success = result.returncode == 0
+                if not idempotence_success and result.stderr:
+                    print(f"  ❌ Idempotence test failed: {result.stderr}")
+                
+                checks.append(idempotence_success)
+            except Exception as e:
+                print(f"  ❌ Idempotence test failed: {e}")
+                checks.append(False)
     
     if all(checks):
         print("✓ All validations passed")
@@ -123,6 +143,7 @@ if __name__ == "__main__":
     parser.add_argument('--syntax-only', action='store_true', help='Only check YAML syntax')
     parser.add_argument('--lint-only', action='store_true', help='Only run ansible-lint')
     parser.add_argument('--state-validation', action='store_true', help='Enable state validation with --diff')
+    parser.add_argument('--idempotence-test', action='store_true', help='Run idempotence testing (requires inventory)')
     
     args = parser.parse_args()
     
@@ -131,6 +152,6 @@ if __name__ == "__main__":
     elif args.lint_only:
         success = run_ansible_lint(args.playbook, args.dry_run)
     else:
-        success = validate_all(args.playbook, args.inventory, args.dry_run, args.verbose, args.state_validation)
+        success = validate_all(args.playbook, args.inventory, args.dry_run, args.verbose, args.state_validation, args.idempotence_test)
     
     sys.exit(0 if success else 1)
