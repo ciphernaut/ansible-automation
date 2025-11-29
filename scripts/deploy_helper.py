@@ -18,6 +18,18 @@ from pathlib import Path
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# Import guardrails for context preservation
+GUARDRAILS_AVAILABLE = False
+AnsibleGuardrails = None
+
+try:
+    import sys
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from ansible_guardrails import AnsibleGuardrails
+    GUARDRAILS_AVAILABLE = True
+except ImportError:
+    pass
+
 def load_deployment_state(state_file="deployment_state.json"):
     """Load previous deployment state"""
     try:
@@ -388,13 +400,31 @@ def run_ansible_with_retry(playbook, inventory, max_retries=3, base_timeout=300,
     return False
 
 def deploy_stage(stage_config, playbook, inventory, state, dry_run=False):
-    """Deploy a specific stage with retry logic"""
+    """Deploy a specific stage with retry logic and guardrails validation"""
     stage_name = stage_config.get('name', 'unknown')
     stage_timeout = stage_config.get('timeout', 300)
     max_retries = stage_config.get('retries', 3)
     async_mode = stage_config.get('async', False)
     
     print(f"\n🎯 Deploying Stage: {stage_name}")
+    
+    # Initialize guardrails for context preservation
+    guardrails = None
+    if GUARDRAILS_AVAILABLE and AnsibleGuardrails:
+        try:
+            guardrails = AnsibleGuardrails(inventory)
+        except Exception as e:
+            print(f"  ⚠️  Guardrails initialization failed: {e}")
+    
+    # Validate deployment approach with guardrails
+    if guardrails and not dry_run:
+        deployment_desc = f"deploy stage '{stage_name}' with playbook '{playbook}'"
+        solution = guardrails.propose_ansible_solution(deployment_desc)
+        
+        if solution.get("debugging_approach"):
+            print(f"  📋 Guardrails recommendations:")
+            for approach in solution["debugging_approach"][:2]:  # Show top 2
+                print(f"    • {approach}")
     
     if dry_run:
         print(f"[DRY RUN] Would deploy stage '{stage_name}'")

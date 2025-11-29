@@ -9,67 +9,35 @@ description: Comprehensive Ansible automation skill with Context7 integration fo
 
 **Core Ansible Commands**
 ```bash
-# Syntax validation
+# Syntax validation and check mode
 ansible-playbook --syntax-check playbook.yml
+ansible-playbook --check --diff playbook.yml
 
-# Check mode - see what would change
-ansible-playbook --check playbook.yml
-ansible-playbook --check --diff playbook.yml  # Show actual changes
+# Targeted execution
+ansible-playbook -i inventory.yml --limit webservers --tags database,config playbook.yml
 
-# Run with specific inventory
-ansible-playbook -i inventory.yml playbook.yml
-
-# Target specific hosts/groups
-ansible-playbook -i inventory.yml --limit webservers playbook.yml
-
-# Run specific tags
-ansible-playbook --tags database,config playbook.yml
-
-# Verbose output for debugging
-ansible-playbook -v playbook.yml
-ansible-playbook -vvv playbook.yml  # Very verbose
+# Debugging
+ansible-playbook -vvv --step playbook.yml
 ```
 
 **Change Verification**
 ```bash
-# Basic verification - check for untracked changes
+# Preview changes with diff
 ansible-playbook --check --diff playbook.yml
 
 # Tag-based verification
 ansible-playbook --check --diff --tags install playbook.yml
-ansible-playbook --check --diff --tags config playbook.yml
 
-# Target-specific verification
+# Target-specific verification  
 ansible-playbook --check --diff --limit host01 playbook.yml
-
-# With callbacks for enhanced analysis (see CALLBACKS.md):
-ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook --check --diff playbook.yml
-ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook --check --diff playbook.yml
-ANSIBLE_STDOUT_CALLBACK=json ansible-playbook --check --diff playbook.yml
-ANSIBLE_CALLBACKS_ENABLED=junit,opentelemetry ansible-playbook --check --diff playbook.yml
-```
-
-**Advanced Workflows**
-```bash
-# List available tags for planning
-ansible-playbook --list-tags playbook.yml
-
-# List tasks for verification
-ansible-playbook --list-tasks playbook.yml
-
-# Step-by-step execution for debugging
-ansible-playbook --step --check --diff playbook.yml
-
-# Dry run with extra variables
-ansible-playbook --check --diff --extra-vars "env=dev version=1.2" playbook.yml
 ```
 
 **Helper Scripts (Complex Workflows Only)**
 ```bash
-# Progressive deployment with state management
+# Progressive deployment
 python3 scripts/deploy_helper.py deploy_config.yml inventory.yml
 
-# Generate playbooks from templates
+# Generate playbooks
 python3 scripts/generate_playbook.py --template webserver --dry-run
 
 # Community module management
@@ -86,50 +54,28 @@ When available, all scripts automatically leverage Context7 for:
 
 ## Core Features
 
-### 1. Playbook Generation
-- Template-based playbook creation
-- YAML configuration input
-- Task automation
-- Variable handling
-
-### 2. Role Management
-- Standard role structure
-- Task organization
-- Handler management
-- Variable precedence
-
-### 3. Inventory Configuration
-- Static and dynamic inventory
-- SSH configuration
-- Connection methods
-- Group management
-
-### 4. Deployment Workflows
-- Progressive deployment with staging and monitoring
-- Hardware-aware optimization with performance tracking
-- Async execution support with observability
-- State tracking and resume with audit trails
-- Rolling deployments with OpenTelemetry tracing
-- Blue-green deployments with timing analysis
-- Canary deployments with structured logging
-- CI/CD integration with JUnit reporting
-
-### 5. Testing Framework
-- Tox integration with JUnit reporting
-- Docker targets
-- Molecule testing
-- Validation checks with callback integration
-
-### 6. Community Integration with Context7
-- **Real-time Module Discovery**: Context7 provides current Ansible module documentation
-- **Collection Management**: Up-to-date installation patterns and best practices
-- **Best Practices Integration**: Live guidance from official Ansible documentation
-- **Pattern Recognition**: Context7 identifies reusable automation patterns
-- **Version-Specific Examples**: Current syntax and deprecated feature warnings
+### Core Features
+- **Playbook Generation**: Template-based creation with Context7 best practices
+- **Role Management**: Standard structure, task organization, variable precedence  
+- **Inventory Configuration**: Static/dynamic inventory, SSH configuration
+- **Deployment Workflows**: Progressive deployment, monitoring, state tracking
+- **Testing Framework**: Tox integration, Docker targets, validation checks
+- **Community Integration**: Real-time module discovery and best practices via Context7
 
 
 ## Resources
 
+**Core References:**
+- [Parameters Reference](references/parameters.md) - Core Ansible parameters and usage
+- [Usage Patterns](references/usage-patterns.md) - Comprehensive workflows and best practices
+- [Guardrails Framework](references/guardrails.md) - Context preservation and anti-pattern prevention
+
+**Configuration:**
+- [Callback Environment Variables](references/callbacks-env.md) - Callback configuration
+- [Script Parameters](references/script-parameters.md) - Helper script parameters
+- [Ansible Facts Integration](references/ansible-facts.md) - Dynamic configuration with facts
+
+**Specialized Topics:**
 - [INVENTORY.md](references/INVENTORY.md) - Inventory management
 - [ROLES.md](references/ROLES.md) - Role patterns
 - [DEPLOYMENT.md](references/DEPLOYMENT.md) - Deployment workflows
@@ -140,126 +86,42 @@ When available, all scripts automatically leverage Context7 for:
 - [MODES.md](references/MODES.md) - Change verification system
 - [TESTING.md](references/TESTING.md) - Docker and Tox testing
 
+**Integration:**
+- [AGENTS.md Reference](references/AGENTS-REFERENCE.md) - For projects using this skill in their AGENTS.md
+
 ## Scripts (Complex Workflows Only)
-- `generate_playbook.py` - Create playbooks from templates with Context7 best practices
-- `deploy_helper.py` - Progressive deployment with state tracking and production monitoring
+
+- `generate_playbook.py` - Template-based playbook creation
+- `deploy_helper.py` - Progressive deployment with state tracking
 - `community_manager.py` - Community module discovery and management
-- `tox_testing.py` - Testing framework with Docker targets and JUnit integration
+- `tox_testing.py` - Testing framework with Docker targets
+- `ansible_guardrails.py` - Context preservation and anti-pattern prevention
+- `context_preserver.py` - Maintains best practices across sessions
 
-**Note**: Most operations use direct ansible commands. Scripts are reserved for complex multi-step workflows that provide significant value beyond basic command execution.
+**Note**: Most operations use direct ansible commands. Scripts handle complex multi-step workflows.
 
-### Core Ansible Parameters
-- `--syntax-check`: Validate playbook syntax without execution
-- `--check`: Dry run mode - show what would change without making changes
-- `--diff`: Show actual differences when used with --check
-- `--list-tags`: Display all available tags in playbook
-- `--list-tasks`: Display all tasks in playbook
-- `--tags`: Run only tasks with specified tags
-- `--skip-tags`: Skip tasks with specified tags
-- `--limit`: Restrict execution to specific hosts/groups
-- `--extra-vars`: Pass additional variables
-- `-v, -vv, -vvv`: Verbose output levels for debugging
-- `--step`: Interactive step-by-step execution
+## Context Preservation & Guardrails
 
-### Callback Environment Variables
-- `ANSIBLE_STDOUT_CALLBACK=minimal`: Ultra-compact output
-- `ANSIBLE_CALLBACK_RESULT_FORMAT=yaml`: YAML results for template matching
-- `ANSIBLE_CALLBACK_FORMAT_PRETTY=true`: Readable YAML formatting
-- `ANSIBLE_STDOUT_CALLBACK=json`: Structured JSON output
-- `ANSIBLE_CALLBACKS_ENABLED=junit,opentelemetry`: Enhanced monitoring
+Sophisticated system to prevent AI context attrition and maintain Ansible best practices. See [Guardrails Framework](references/guardrails.md) for complete details.
 
-### Script Parameters (Complex Workflows)
-- `--dry-run`: Preview operations without execution (scripts)
-- `--verbose`: Detailed output with Context7 integration (scripts)
-- `--monitor`: Production monitoring with callbacks (deploy_helper.py)
-- `--audit`: Enable audit logging with log_plays (deploy_helper.py)
+**Key Features:**
+- Anti-pattern detection (direct SSH, shell commands, manual editing)
+- Operation analysis with proper Ansible module suggestions
+- Compliance checking against best practices
+- Session tracking across multiple AI sessions
 
-### Ansible Facts Integration
-Use `ansible_facts` for dynamic configuration and target-specific decisions:
-
+**Quick Examples:**
 ```bash
-# Gather facts first
-ansible-playbook --gather-facts playbook.yml
+# Check compliance
+python3 scripts/ansible_guardrails.py --check-compliance "ssh to server and edit config"
 
-# Use facts in conditionals
-ansible-playbook --extra-vars "target_os={{ ansible_os_family }}" playbook.yml
+# Analyze operations
+python3 scripts/ansible_guardrails.py -i inventory.yml --analyze-operation "file_operations:edit_file"
 
-# Template selection based on facts
-ansible-playbook --extra-vars "template={{ ansible_distribution }}" playbook.yml
+# Generate debugging playbooks
+python3 scripts/ansible_guardrails.py -i inventory.yml --generate-debug-playbook "service not starting"
 ```
 
 ## Usage Patterns
 
-### Unified Workflow
-1. **Planning**: Use `--syntax-check` and `--check --diff` for safe previews
-2. **Development**: Create playbooks with Context7 best practices, test with `--check --diff`
-3. **Tag-Based Development**: Use `--list-tags` to understand structure, `--tags` for focused testing
-4. **Production**: Deploy with progressive staging, verify changes with `--check --diff`
-5. **Debugging**: Use `--step` or `--vvv` for detailed troubleshooting
-6. **Context7 Integration**: Automatic real-time documentation and best practices throughout
-
-### Debugging Workflow (Critical Path)
-When issues occur during implementation, follow this disciplined approach:
-
-```bash
-# 1. ALWAYS start with check/diff to understand needed changes
-ansible-playbook your_playbook.yml --check --diff
-
-# 2. For large playbooks, use step-by-step or tag-based verification:
-#    Step mode: ansible-playbook playbook.yml --step --check --diff
-#    Tag mode: ansible-playbook playbook.yml --tags "install" --check --diff
-
-# 3. List available tags for strategic testing
-ansible-playbook --list-tags playbook.yml
-
-# 4. Section-by-section verification
-ansible-playbook --tags "install" --check --diff playbook.yml
-ansible-playbook --tags "config" --check --diff playbook.yml
-
-# 5. Analyze diff output - update templates/variables/configs accordingly
-# 6. Re-run with --check --diff to verify your fixes
-# 7. Only after check passes, run without --check to apply changes
-# 8. Final verification with callbacks for documentation
-ANSIBLE_STDOUT_CALLBACK=json ansible-playbook --check --diff playbook.yml
-```
-
-**Manual on-target tweaking should be the exception, not the rule.** Only use when:
-- Complex state dependencies that `--check` can't predict
-- Service restarts requiring real-time observation  
-- Performance tuning needing live metrics
-- Network connectivity issues needing immediate resolution
-
-### Advanced Tagging Strategy
-For large playbooks where `--check --diff` produces overwhelming output, use systematic tagging:
-
-```bash
-# 1. Discover available tags
-ansible-playbook --list-tags playbook.yml
-
-# 2. Section-by-section verification
-ansible-playbook --tags "install" --check --diff playbook.yml
-ansible-playbook --tags "config" --check --diff playbook.yml
-
-# 3. Progressive deployment with tags
-ansible-playbook --tags "install" playbook.yml
-ansible-playbook --tags "config" playbook.yml
-ansible-playbook --tags "service" playbook.yml
-```
-
-See [TAGGING.md](references/TAGGING.md) for complete orthogonal tag taxonomy and refactoring workflows.
-
-### Mode-Specific Safety
-See [MODES.md](references/MODES.md) for complete change verification system and mode configuration:
-
-**Safe Operations (Plan Mode):**
-- `ansible-playbook --syntax-check` - Syntax validation only
-- `ansible-playbook --check --diff` - Dry run with no changes
-- `ansible-playbook --list-tags` - Read-only tag discovery
-- `ansible-playbook --list-tasks` - Read-only task analysis
-
-**Risky Operations (Build Mode Required):**
-- `ansible-playbook` - Actual execution with changes
-- `ansible-galaxy install` - Collection installation
-- Package installation and system modifications
-
-**Context7 Integration:** Available in both modes for enhanced accuracy and guidance
+See [Usage Patterns](references/usage-patterns.md) for comprehensive workflows including unified development/deployment workflows, debugging procedures, advanced tagging strategies, and environment-specific patterns.
