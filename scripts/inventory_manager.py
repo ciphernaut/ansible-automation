@@ -10,7 +10,39 @@ import json
 import sys
 from pathlib import Path
 
+# Import guardrails for context preservation
+GUARDRAILS_AVAILABLE = False
+AnsibleGuardrails = None
+
+try:
+    import sys
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from ansible_guardrails import AnsibleGuardrails
+    GUARDRAILS_AVAILABLE = True
+except ImportError:
+    pass
+
 def create_inventory(hosts_file, output_file, dry_run=False, verbose=False):
+    """Create Ansible inventory from hosts file with guardrails validation"""
+    
+    # Initialize guardrails if available
+    guardrails = None
+    if GUARDRAILS_AVAILABLE and AnsibleGuardrails:
+        try:
+            guardrails = AnsibleGuardrails()
+        except Exception as e:
+            if verbose:
+                print(f"  ⚠️  Guardrails initialization failed: {e}")
+    
+    # Validate operation with guardrails
+    if guardrails:
+        compliance = guardrails.check_ansible_compliance(f"create inventory from {hosts_file}")
+        if not compliance["compliant"] and verbose:
+            print(f"  ⚠️  Guardrails warnings:")
+            for violation in compliance["violations"]:
+                print(f"    • {violation}")
+            for alt in compliance["ansible_alternatives"]:
+                print(f"    ✓ {alt}")
     """Create Ansible inventory from hosts file"""
     if dry_run:
         print(f"[DRY RUN] Would create inventory: {output_file}")

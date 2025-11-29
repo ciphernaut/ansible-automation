@@ -9,8 +9,29 @@ import yaml
 import sys
 from pathlib import Path
 
+# Import guardrails for context preservation
+GUARDRAILS_AVAILABLE = False
+AnsibleGuardrails = None
+
+try:
+    import sys
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from ansible_guardrails import AnsibleGuardrails
+    GUARDRAILS_AVAILABLE = True
+except ImportError:
+    pass
+
 def generate_playbook(config_file, output_file, dry_run=False, verbose=False):
-    """Generate playbook from config"""
+    """Generate playbook from config with guardrails validation"""
+    
+    # Initialize guardrails if available
+    guardrails = None
+    if GUARDRAILS_AVAILABLE and AnsibleGuardrails:
+        try:
+            guardrails = AnsibleGuardrails()
+        except Exception as e:
+            if verbose:
+                print(f"  ⚠️  Guardrails initialization failed: {e}")
     if dry_run:
         print(f"[DRY RUN] Would generate {output_file} from {config_file}")
         # Preview what would be generated
@@ -47,10 +68,26 @@ def generate_playbook(config_file, output_file, dry_run=False, verbose=False):
     }
     
     for task in config.get('tasks', []):
-        playbook['tasks'].append({
+        task_dict = {
             'name': task.get('name'),
             task['module']: task.get('params', {})
-        })
+        }
+        
+        # Validate task with guardrails
+        if guardrails:
+            operation_type = f"{task['module']}_operations"
+            analysis = guardrails.analyze_operation(operation_type, task.get('params', {}))
+            
+            if analysis["guardrails_violations"] and verbose:
+                print(f"    ⚠️  Task '{task.get('name')}' guardrails warnings:")
+                for violation in analysis["guardrails_violations"]:
+                    print(f"      • {violation}")
+            
+            # Add guardrails recommendations as comments if needed
+            if analysis["recommended_modules"]:
+                task_dict['_guardrails_recommended'] = analysis["recommended_modules"]
+        
+        playbook['tasks'].append(task_dict)
     
     with open(output_file, 'w') as f:
         yaml.dump([playbook], f, default_flow_style=False)

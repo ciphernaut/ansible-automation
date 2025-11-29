@@ -145,8 +145,48 @@ When available, all scripts automatically leverage Context7 for:
 - `deploy_helper.py` - Progressive deployment with state tracking and production monitoring
 - `community_manager.py` - Community module discovery and management
 - `tox_testing.py` - Testing framework with Docker targets and JUnit integration
+- `ansible_guardrails.py` - Context preservation and anti-pattern prevention framework
+- `context_preserver.py` - Maintains Ansible best practices across sessions
 
 **Note**: Most operations use direct ansible commands. Scripts are reserved for complex multi-step workflows that provide significant value beyond basic command execution.
+
+## Context Preservation & Guardrails
+
+The ansible-automation skill includes a sophisticated context preservation system to prevent AI context attrition and maintain Ansible best practices:
+
+### Guardrails Framework (`ansible_guardrails.py`)
+- **Anti-Pattern Detection**: Identifies non-Ansible patterns (direct SSH, shell commands, manual editing)
+- **Operation Analysis**: Suggests proper Ansible modules for common operations
+- **Compliance Checking**: Validates proposed actions against Ansible best practices
+- **Variable Discovery**: Uses ansible-inventory tools to understand variable hierarchy
+
+### Context Preservation (`context_preserver.py`)
+- **Session Tracking**: Maintains context across multiple AI sessions
+- **Best Practice Reminders**: Provides timely reminders about Ansible patterns
+- **Operation History**: Tracks recent operations for pattern recognition
+- **Automatic Integration**: Seamlessly integrated into all helper scripts
+
+### Usage Examples
+```bash
+# Check compliance of proposed actions
+python3 scripts/ansible_guardrails.py --check-compliance "ssh to server and edit config"
+
+# Analyze operations for Ansible-native alternatives
+python3 scripts/ansible_guardrails.py -i inventory.yml --analyze-operation "file_operations:edit_file"
+
+# Generate debugging playbooks with guardrails
+python3 scripts/ansible_guardrails.py -i inventory.yml --generate-debug-playbook "service not starting"
+
+# Discover variable truth across inventory
+python3 scripts/ansible_guardrails.py -i inventory.yml --discover-var app_version --host web01
+```
+
+### Integration Points
+All major scripts automatically integrate guardrails:
+- **Inventory Manager**: Validates inventory creation patterns
+- **Playbook Generator**: Checks task compliance and suggests proper modules
+- **Deploy Helper**: Provides deployment recommendations and validates approaches
+- **Context Preserver**: Maintains best practice awareness across sessions
 
 ### Core Ansible Parameters
 - `--syntax-check`: Validate playbook syntax without execution
