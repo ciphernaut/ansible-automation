@@ -9,67 +9,35 @@ description: Comprehensive Ansible automation skill with Context7 integration fo
 
 **Core Ansible Commands**
 ```bash
-# Syntax validation
+# Syntax validation and check mode
 ansible-playbook --syntax-check playbook.yml
+ansible-playbook --check --diff playbook.yml
 
-# Check mode - see what would change
-ansible-playbook --check playbook.yml
-ansible-playbook --check --diff playbook.yml  # Show actual changes
+# Targeted execution
+ansible-playbook -i inventory.yml --limit webservers --tags database,config playbook.yml
 
-# Run with specific inventory
-ansible-playbook -i inventory.yml playbook.yml
-
-# Target specific hosts/groups
-ansible-playbook -i inventory.yml --limit webservers playbook.yml
-
-# Run specific tags
-ansible-playbook --tags database,config playbook.yml
-
-# Verbose output for debugging
-ansible-playbook -v playbook.yml
-ansible-playbook -vvv playbook.yml  # Very verbose
+# Debugging
+ansible-playbook -vvv --step playbook.yml
 ```
 
 **Change Verification**
 ```bash
-# Basic verification - check for untracked changes
+# Preview changes with diff
 ansible-playbook --check --diff playbook.yml
 
 # Tag-based verification
 ansible-playbook --check --diff --tags install playbook.yml
-ansible-playbook --check --diff --tags config playbook.yml
 
-# Target-specific verification
+# Target-specific verification  
 ansible-playbook --check --diff --limit host01 playbook.yml
-
-# With callbacks for enhanced analysis (see CALLBACKS.md):
-ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook --check --diff playbook.yml
-ANSIBLE_CALLBACK_RESULT_FORMAT=yaml ANSIBLE_STDOUT_CALLBACK=minimal ansible-playbook --check --diff playbook.yml
-ANSIBLE_STDOUT_CALLBACK=json ansible-playbook --check --diff playbook.yml
-ANSIBLE_CALLBACKS_ENABLED=junit,opentelemetry ansible-playbook --check --diff playbook.yml
-```
-
-**Advanced Workflows**
-```bash
-# List available tags for planning
-ansible-playbook --list-tags playbook.yml
-
-# List tasks for verification
-ansible-playbook --list-tasks playbook.yml
-
-# Step-by-step execution for debugging
-ansible-playbook --step --check --diff playbook.yml
-
-# Dry run with extra variables
-ansible-playbook --check --diff --extra-vars "env=dev version=1.2" playbook.yml
 ```
 
 **Helper Scripts (Complex Workflows Only)**
 ```bash
-# Progressive deployment with state management
+# Progressive deployment
 python3 scripts/deploy_helper.py deploy_config.yml inventory.yml
 
-# Generate playbooks from templates
+# Generate playbooks
 python3 scripts/generate_playbook.py --template webserver --dry-run
 
 # Community module management
@@ -86,56 +54,28 @@ When available, all scripts automatically leverage Context7 for:
 
 ## Core Features
 
-### 1. Playbook Generation
-- Template-based playbook creation
-- YAML configuration input
-- Task automation
-- Variable handling
-
-### 2. Role Management
-- Standard role structure
-- Task organization
-- Handler management
-- Variable precedence
-
-### 3. Inventory Configuration
-- Static and dynamic inventory
-- SSH configuration
-- Connection methods
-- Group management
-
-### 4. Deployment Workflows
-- Progressive deployment with staging and monitoring
-- Hardware-aware optimization with performance tracking
-- Async execution support with observability
-- State tracking and resume with audit trails
-- Rolling deployments with OpenTelemetry tracing
-- Blue-green deployments with timing analysis
-- Canary deployments with structured logging
-- CI/CD integration with JUnit reporting
-
-### 5. Testing Framework
-- Tox integration with JUnit reporting
-- Docker targets
-- Molecule testing
-- Validation checks with callback integration
-
-### 6. Community Integration with Context7
-- **Real-time Module Discovery**: Context7 provides current Ansible module documentation
-- **Collection Management**: Up-to-date installation patterns and best practices
-- **Best Practices Integration**: Live guidance from official Ansible documentation
-- **Pattern Recognition**: Context7 identifies reusable automation patterns
-- **Version-Specific Examples**: Current syntax and deprecated feature warnings
+### Core Features
+- **Playbook Generation**: Template-based creation with Context7 best practices
+- **Role Management**: Standard structure, task organization, variable precedence  
+- **Inventory Configuration**: Static/dynamic inventory, SSH configuration
+- **Deployment Workflows**: Progressive deployment, monitoring, state tracking
+- **Testing Framework**: Tox integration, Docker targets, validation checks
+- **Community Integration**: Real-time module discovery and best practices via Context7
 
 
 ## Resources
 
+**Core References:**
 - [Parameters Reference](references/parameters.md) - Core Ansible parameters and usage
+- [Usage Patterns](references/usage-patterns.md) - Comprehensive workflows and best practices
+- [Guardrails Framework](references/guardrails.md) - Context preservation and anti-pattern prevention
+
+**Configuration:**
 - [Callback Environment Variables](references/callbacks-env.md) - Callback configuration
 - [Script Parameters](references/script-parameters.md) - Helper script parameters
 - [Ansible Facts Integration](references/ansible-facts.md) - Dynamic configuration with facts
-- [Usage Patterns](references/usage-patterns.md) - Comprehensive workflows and best practices
-- [Guardrails Framework](references/guardrails.md) - Context preservation and anti-pattern prevention
+
+**Specialized Topics:**
 - [INVENTORY.md](references/INVENTORY.md) - Inventory management
 - [ROLES.md](references/ROLES.md) - Role patterns
 - [DEPLOYMENT.md](references/DEPLOYMENT.md) - Deployment workflows
@@ -147,51 +87,38 @@ When available, all scripts automatically leverage Context7 for:
 - [TESTING.md](references/TESTING.md) - Docker and Tox testing
 
 ## Scripts (Complex Workflows Only)
-- `generate_playbook.py` - Create playbooks from templates with Context7 best practices
-- `deploy_helper.py` - Progressive deployment with state tracking and production monitoring
-- `community_manager.py` - Community module discovery and management
-- `tox_testing.py` - Testing framework with Docker targets and JUnit integration
-- `ansible_guardrails.py` - Context preservation and anti-pattern prevention framework
-- `context_preserver.py` - Maintains Ansible best practices across sessions
 
-**Note**: Most operations use direct ansible commands. Scripts are reserved for complex multi-step workflows that provide significant value beyond basic command execution.
+- `generate_playbook.py` - Template-based playbook creation
+- `deploy_helper.py` - Progressive deployment with state tracking
+- `community_manager.py` - Community module discovery and management
+- `tox_testing.py` - Testing framework with Docker targets
+- `ansible_guardrails.py` - Context preservation and anti-pattern prevention
+- `context_preserver.py` - Maintains best practices across sessions
+
+**Note**: Most operations use direct ansible commands. Scripts handle complex multi-step workflows.
 
 ## Context Preservation & Guardrails
 
-The skill includes a sophisticated context preservation system to prevent AI context attrition and maintain Ansible best practices. See [Guardrails Framework](references/guardrails.md) for complete details.
+Sophisticated system to prevent AI context attrition and maintain Ansible best practices. See [Guardrails Framework](references/guardrails.md) for complete details.
 
-### Key Features
-- **Anti-Pattern Detection**: Identifies non-Ansible patterns (direct SSH, shell commands, manual editing)
-- **Operation Analysis**: Suggests proper Ansible modules for common operations
-- **Compliance Checking**: Validates proposed actions against Ansible best practices
-- **Session Tracking**: Maintains context across multiple AI sessions
-- **Best Practice Reminders**: Provides timely reminders about Ansible patterns
+**Key Features:**
+- Anti-pattern detection (direct SSH, shell commands, manual editing)
+- Operation analysis with proper Ansible module suggestions
+- Compliance checking against best practices
+- Session tracking across multiple AI sessions
 
-### Quick Examples
+**Quick Examples:**
 ```bash
-# Check compliance of proposed actions
+# Check compliance
 python3 scripts/ansible_guardrails.py --check-compliance "ssh to server and edit config"
 
-# Analyze operations for Ansible-native alternatives
+# Analyze operations
 python3 scripts/ansible_guardrails.py -i inventory.yml --analyze-operation "file_operations:edit_file"
 
-# Generate debugging playbooks with guardrails
+# Generate debugging playbooks
 python3 scripts/ansible_guardrails.py -i inventory.yml --generate-debug-playbook "service not starting"
 ```
 
-
-
-
-
-
-
-
-
 ## Usage Patterns
 
-See [Usage Patterns](references/usage-patterns.md) for comprehensive workflows including:
-- Unified development and deployment workflows
-- Debugging procedures and critical path analysis
-- Advanced tagging strategies for complex playbooks
-- Environment-specific patterns (dev/staging/production)
-- Performance optimization and error handling patterns
+See [Usage Patterns](references/usage-patterns.md) for comprehensive workflows including unified development/deployment workflows, debugging procedures, advanced tagging strategies, and environment-specific patterns.
