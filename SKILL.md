@@ -86,6 +86,9 @@ When available, all scripts automatically leverage Context7 for:
 - [MODES.md](references/MODES.md) - Change verification system
 - [TESTING.md](references/TESTING.md) - Docker and Tox testing
 
+**Integration:**
+- [AGENTS.md Reference](references/AGENTS-REFERENCE.md) - For projects using this skill in their AGENTS.md
+
 ## Scripts (Complex Workflows Only)
 
 - `generate_playbook.py` - Template-based playbook creation
